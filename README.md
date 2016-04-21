@@ -13,8 +13,6 @@ What Provisio provides over and above Bash is the following:
 
 It's not big and it's not clever. But it is quite useful.
 
-Pimped scripts are syntactically valid without Provisio and, depending on the features employed, may be self-sufficient as releasable provisioning scripts. Provisio tries to be helpful during development, when provisioning is less well determined. 
-
 ## Usage
 The business-end of Provisio is invoking the following command in the same directory as a *Provisiofile*.
 
@@ -22,7 +20,9 @@ The business-end of Provisio is invoking the following command in the same direc
   
  The *Provisiofile* is essentially (and will be translated into) a Bash script. Embedded smart comments control execution and secondary provisio commands provide additional provisioning functionality. 
  
- An example of smart comments is
+### "Smart" comments
+ 
+Smart comments remove ugly, imperative boilerplate from the provisioning script. They also provide clean reporting of what code blocks are being executed with proper redirection of the output of sub-commands to a persistent log. 
 
     #do foo once
       echo $(date) > installed-date.txt
@@ -35,5 +35,9 @@ The business-end of Provisio is invoking the following command in the same direc
     #do baz never
       rm -fR /
     #end
+    
+Commented scripts are syntactically valid without Provisio and, depending on the features used, may be self-sufficient as releasable code because there may be no distinction between *once* and *always* in production. Provisio still can be helpful during development, while configurations may be less determined. 
 
-Pretty simple. Mostly it saves your provisioning script from ugly sentry file boilerplate. It also creates a nice, clean report of what code blocks are being executed or skipped with proper redirection to logs for sub commands. 
+### Secondary provisio commands
+
+TODO
