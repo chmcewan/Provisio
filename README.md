@@ -22,7 +22,7 @@ The business-end of Provisio is invoking the following command in the same direc
  
 ### "Smart" comments
  
-Smart comments remove ugly boilerplate from the provisioning script. They also provide clean reporting of what code blocks are being executed with proper error handling and redirection sub-command output to a persistent log. 
+Smart comments remove ugly boilerplate from the provisioning script. They also provide clean reporting of what code blocks are being executed with proper error handling and redirection of command output to a persistent log. 
 
     #do foo once
       echo $(date) > installed-date.txt
