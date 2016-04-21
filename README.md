@@ -11,7 +11,7 @@ What Provisio provides over and above Bash is the following:
 * Simple interpolation of environmental variables into templates 
 * A distinction between public and private environmental variables
 
-It's not big and it's not clever. But it is quite useful.
+It's not big and it's not clever. But it is quite useful and a cheap dependency.
 
 ## Usage
 The business-end of Provisio is invoking the following command in the same directory as a *Provisiofile*.
@@ -22,7 +22,7 @@ The business-end of Provisio is invoking the following command in the same direc
  
 ### "Smart" comments
  
-Smart comments remove ugly, imperative boilerplate from the provisioning script. They also provide clean reporting of what code blocks are being executed with proper redirection of the output of sub-commands to a persistent log. 
+Smart comments remove ugly boilerplate from the provisioning script. They also provide clean reporting of what code blocks are being executed with proper error handling and redirection sub-command output to a persistent log. 
 
     #do foo once
       echo $(date) > installed-date.txt
@@ -36,7 +36,7 @@ Smart comments remove ugly, imperative boilerplate from the provisioning script.
       rm -fR /
     #end
     
-Commented scripts are syntactically valid without Provisio and, depending on the features used, may be self-sufficient as releasable code because there may be no distinction between *once* and *always* in production. Provisio still can be helpful during development, while configurations may be less determined. 
+Commented scripts are syntactically valid without Provisio and may be self-sufficient as releasable code if there is no distinction between *once* and *always* in production. Provisio can still be helpful during development, where configurations may be less determined. 
 
 ### Secondary provisio commands
 
