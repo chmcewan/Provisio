@@ -45,7 +45,11 @@ Smart comments remove ugly boilerplate from the provisioning script. They provid
       rm -fR /
     #end
     
-Commented scripts that don't use *never* are syntactically valid without Provisio and may be self-sufficient if there is no distinction between *once* and *always* in production. Even here, Provisio can still be helpful during development when configurations may be less well determined. 
+    #do buzz if production
+      echo "It worked!" | mail user@gmail.com
+    #end
+    
+Commented scripts are syntactically valid without Provisio. If they don't use *never* or *if* and don't use secondary provsio commands then they may be self-sufficient when there is no distinction between *once* and *always* in production. For such simple scripts, Provisio can still be helpful during development when configurations may still be in flux (see Example below). 
 
 ### Secondary provisio commands
 
@@ -53,29 +57,29 @@ In addition to the primary user command (*up*), Provisio provides a small collec
 
     $ provisio download <URL>
 
-Downloads and caches a remote dependency, such as a tarball. Similarly
+Downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only. Similarly
 
     $ provisio install <MANAGER> <PACKAGE>
     
-performs a package manager (currently *yum*, *npm* and *pip*) install that checks and populates a local cache before performing the install proper. 
+performs a package manager (currently *yum*, *npm* and *pip*) install that, again, checks and populates a local cache before performing the install proper. 
 
-All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a lter date. Provisio does not assume you are a trendy web-shop with no security concerns.
+All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio does not assume you are a trendy web-shop with no security concerns.
 
 Provisio also provides some simple commands to aid management and local configuration, such as
 
     $ provisio cat <file>
     
-which reads a file to standard output while interpolating {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration file needs. Speaking of environmental variables, 
+which reads a file to standard output while interpolating {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration file needs. Regarding environmental variables, 
 
     $ provisio env
     
-echoes configuration-time environmental variables, such that they can be sourced by e.g. init scripts. Crucially, Provisio makes a distinction between environmental variables that begin with an underscore ("_"). These are considered private and, although used during provisioning, will not be stored in the provisioned system, e.g. passwords.
+echoes provision-time environmental variables, such that they can be stored and sourced by e.g. init scripts. Crucially, Provisio makes a distinction between environmental variables that begin with an underscore ("_"). These are considered private and, although used during provisioning, will not be echoed and stored in the provisioned system, e.g. passwords.
 
 Lastly, 
 
     $ provisio include <path>
     
-allows for some basic decomposition of provisioning scripts. Note that cacheing occurs seperately for each Provisiofile such that common provisioning (e.g. base Linux provisioning) is shared amongst particular systems (e.g. web and database servers). 
+supports decomposition of provisioning scripts. Note that cacheing occurs seperately for each Provisiofile such that common provisioning (e.g. base Linux provisioning) is shared amongst particular systems (e.g. web and database servers). 
 
 ## Example
 
