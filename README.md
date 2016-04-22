@@ -55,13 +55,13 @@ Commented scripts are syntactically valid without Provisio. If they don't use *n
 
 In addition to the primary user command (*up*), Provisio provides a small collection of commands that are useful to invoke from inside a Provisiofile. Specifically:
 
-    $ provisio download <URL>
-
-downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only. Similarly
-
     $ provisio install <MANAGER> <PACKAGE>
     
-performs a package manager (currently *yum*, *npm* and *pip*) install that, again, checks and populates a local cache before performing the install proper. 
+performs a package manager (currently *yum*, *npm* and *pip*) install that checks and populates a local cache before performing the install proper. Similarly
+
+    $ provisio download <URL>
+
+downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only.
 
 All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio does not assume you are a trendy web-shop with no security or provenance concerns.
 
