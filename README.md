@@ -63,7 +63,7 @@ downloads and caches a remote dependency, such as a tarball. Regardless of the u
     
 performs a package manager (currently *yum*, *npm* and *pip*) install that, again, checks and populates a local cache before performing the install proper. 
 
-All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio does not assume you are a trendy web-shop with no security concerns.
+All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio does not assume you are a trendy web-shop with no security or provenance concerns.
 
 Provisio also provides some simple commands to aid management and local configuration, such as
 
