@@ -57,7 +57,7 @@ In addition to the primary user command (*up*), Provisio provides a small collec
 
     $ provisio download <URL>
 
-Downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only. Similarly
+downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only. Similarly
 
     $ provisio install <MANAGER> <PACKAGE>
     
