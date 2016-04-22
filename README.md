@@ -61,12 +61,12 @@ which reads a file to standard output while interpolating {{foo}} with the envir
 
     $ provisio env
     
-echoes configuration-time environmental variables, such that they can be sourced by e.g. init scripts. Crucially, Provisio makes a distinction between environmental variables that begin with an underscore ("_") which are considered private and, although used during provisioning, are not echoed and storeds in the provisioned system.
+echoes configuration-time environmental variables, such that they can be sourced by e.g. init scripts. Crucially, Provisio makes a distinction between environmental variables that begin with an underscore ("_"). These are considered private and, although used during provisioning, will not be stored in the provisioned system, e.g. passwords.
 
 Lastly, 
 
     $ provisio include <path>
     
-allows for some basic decomposition of provisioning scripts. Note that cacheing occurs seperately for each Provisiofile so that common provisioning (e.g. basic Linux provisioning) is shared amongst particular system (e.g. Web Server provisioning). 
+allows for some basic decomposition of provisioning scripts. Note that cacheing occurs seperately for each Provisiofile such that common provisioning (e.g. base Linux provisioning) is shared amongst particular systems (e.g. web and database servers). 
 
 
