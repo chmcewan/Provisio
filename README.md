@@ -12,7 +12,7 @@ In particular, what Provisio provides over and above Bash is the following:
 * Simple interpolation of environmental variables into templates 
 * A distinction between public and private environmental variables
 
-It's not big and it's not clever. But it is quite useful and a cheap dependency.
+You could do all this in pure Bash, but it would be ugly and annoying.
 
 ## Usage
 The business-end of Provisio is invoking the following command in the same directory as a *Provisiofile*.
