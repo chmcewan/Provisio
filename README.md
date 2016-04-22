@@ -19,7 +19,15 @@ The business-end of Provisio is invoking the following command in the same direc
 
     $ provisio up [/path/to/environment-vars]
   
- The *Provisiofile* is essentially (and will be translated into) a Bash script. Embedded smart comments control execution and secondary provisio commands invoked within the Provisiofile provide additional functionality. 
+The *environment-vars* file will simply be sourced in a way that makes variables available to sub-commands. For example you may make a distinction between
+
+    $ provisio up config/development.env
+    
+and
+
+    $ provisio up config/production.env
+  
+The *Provisiofile* is essentially (and will be translated into) a Bash script. Embedded smart comments control execution and secondary provisio commands invoked within the Provisiofile provide additional functionality. 
  
 ### "Smart" comments
  
@@ -47,17 +55,17 @@ In addition to the primary user command (*up*), Provisio provides a small collec
 
 Downloads and caches a remote dependency, such as a tarball. Similarly
 
-    $ provisio install <PACKAGE>
-    $ provisio pip <PACKAGE>
-    $ provisio npm <PACKAGE>
+    $ provisio install <MANAGER> <PACKAGE>
     
-performs a package manager install that checks and populates a local cache before performing the install proper. All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning.
+performs a package manager (currently *yum*, *npm* and *pip*) install that checks and populates a local cache before performing the install proper. 
+
+All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a lter date. Provisio does not assume you are a trendy web-shop with no security concerns.
 
 Provisio also provides some simple commands to aid management and local configuration, such as
 
     $ provisio cat <file>
     
-which reads a file to standard output while interpolating {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration needs. Speaking of environmental variables, 
+which reads a file to standard output while interpolating {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration file needs. Speaking of environmental variables, 
 
     $ provisio env
     
@@ -69,4 +77,6 @@ Lastly,
     
 allows for some basic decomposition of provisioning scripts. Note that cacheing occurs seperately for each Provisiofile such that common provisioning (e.g. base Linux provisioning) is shared amongst particular systems (e.g. web and database servers). 
 
+## Example
 
+TODO
