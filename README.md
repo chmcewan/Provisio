@@ -37,7 +37,7 @@ Smart comments remove ugly boilerplate from the provisioning script. They provid
       rm -fR /
     #end
     
-Commented scripts are syntactically valid without Provisio and may be self-sufficient as releasable code if there is no distinction between *once* and *always* in production. Even here, Provisio can still be helpful during development when configurations may be less determined. 
+Commented scripts that don't use *never* are syntactically valid without Provisio and may be self-sufficient if there is no distinction between *once* and *always* in production. Even here, Provisio can still be helpful during development when configurations may be less well determined. 
 
 ### Secondary provisio commands
 
