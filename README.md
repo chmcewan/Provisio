@@ -6,9 +6,9 @@ Provisio adds just enough syntactic sugar to Bash scripts to make them more suit
 
 In particular, what Provisio provides over and above Bash is the following:
 
-* One-time and conditional execution of blocks of code
-* Local cacheing of downloads and dependencies for off-line or read-only provisioning
-* Fail-fast error handling and log redirection without syntactic noise
+* One-time execution of blocks of code
+* Local cacheing of dependencies for off-line or read-only provisioning
+* Fail-fast error handling and transparent log redirection
 * Simple interpolation of environmental variables into templates 
 * A distinction between public and private environmental variables
 
