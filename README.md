@@ -49,7 +49,7 @@ Smart comments remove ugly boilerplate from the provisioning script. They provid
       echo "It worked!" | mail user@gmail.com
     #end
     
-Commented scripts are syntactically valid without Provisio. If they don't use *never* or *if* and don't use secondary provsio commands then they may be self-sufficient when there is no distinction between *once* and *always* in production. For such simple scripts, Provisio can still be helpful during development when configurations may still be in flux (see Example below). 
+Commented scripts are syntactically valid without Provisio. If they don't use *never* or *if* and don't use secondary provsio commands then they will be self-sufficient since there is usually no distinction between *once* and *always* in production. In such cases, Provisio can still aid development, where configurations have not stabalised (see Example below). 
 
 ### Secondary provisio commands
 
