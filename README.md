@@ -29,7 +29,7 @@ The arbitrary `.env` file will be sourced such that variables will be available 
 
 ## Provisiofile
 
-Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Embedded smart comments organise and control execution whereas secondary provisio commands provide additional functionality to the provision script. 
+Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Embedded smart comments organise and control execution whereas secondary commands provide additional provisioning functionality. 
  
 ### "Smart" comments
  
