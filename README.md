@@ -85,7 +85,7 @@ supports decomposition of provisioning scripts so that common configurations (e.
 
 ## Contributions
 
-Provisio offers 80% of provisioner functionality for 20% of the effort. How to best avoid it becoming [like this](https://xkcd.com/1654/) in the future is not clear. Pull requests are welcome, but simply forking and adding your specific must-have provisioning routines may be more productive than trying to solve all the problems for everyone.
+Provisio offers 80% of provisioner functionality for 20% of the effort. How to best avoid it becoming [like this](https://xkcd.com/1654/) in the future is not clear. Pull requests are welcome, but simply forking and adding your specific must-have provisioning routines may be more productive than trying to solve all the problems for everyone. Have fun!
 
 
 
