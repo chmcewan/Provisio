@@ -81,6 +81,19 @@ Lastly,
     
 supports decomposition of provisioning scripts so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is conserved across systems. One-time executions are not.
 
+## Install
+
+Provisio is a single file that is easy to import into VMs and containers via the host file system or the web, e.g.
+
+    $ wget https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+    $ chmod 755 provisio
+    $ mv provisio /usr/bin
+
 ## Example
 
-TODO
+The following is a typical example that makes use of some of the API above.
+
+
+
+
+
