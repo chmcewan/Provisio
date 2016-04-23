@@ -79,7 +79,7 @@ Lastly,
 
     $ provisio include <path>
     
-supports decomposition of provisioning scripts so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is conserved across systems, whereas one-time executions are not.
+supports decomposition of provisioning scripts so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is conserved across systems. One-time executions are not.
 
 ## Example
 
