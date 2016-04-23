@@ -87,7 +87,7 @@ Provisio is a single file that is easy to import into VMs and containers via the
 
     $ wget https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
     $ chmod 755 provisio
-    $ mv provisio /usr/bin
+    $ mv provisio /usr/bin/
 
 ## Example
 
