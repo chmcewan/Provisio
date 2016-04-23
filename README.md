@@ -63,7 +63,7 @@ performs a package manager (currently *yum*, *npm* and *pip*) install that check
 
 downloads and caches a remote dependency, such as a tarball. Regardless of the ultimate source, the file is "downloaded" to the /tmp directory, in case the working directory is read-only.
 
-All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio does not assume you are a trendy web-shop with no security or provenance concerns.
+All of this cacheing creates an explicit manifest of dependencies and supports off-line or read-only (e.g. CD-ROM) provisioning at a later date. Provisio tries to support diverse reporting, installation, security or provenance needs.
 
 Provisio also provides some simple commands to aid management and local configuration, such as
 
