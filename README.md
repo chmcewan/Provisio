@@ -69,7 +69,7 @@ Provisio also provides some simple commands to aid management and local configur
 
     $ provisio cat <file>
     
-which reads a file to standard output while interpolating {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration file needs. Regarding environmental variables, 
+which streams a file to standard out while substituting {{foo}} with the environmental variable *foo*. This is sufficient for most paramaterised configuration file needs. Regarding environmental variables, 
 
     $ provisio env
     
