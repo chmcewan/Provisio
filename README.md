@@ -16,22 +16,20 @@ You could do all this in pure Bash, but it would be ugly and annoying.
 
 ## Quick start
 
-Provisio is a single file that is easy to import via a host file system or the web, e.g.
+Provisio is a single file that is easy to import from the host file system or the web, e.g.
 
     $ wget -P /usr/bin/ https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
     $ chmod 755 /usr/bin/provisio
     
-The business-end of Provisio is invoking the following command in the same directory as a `Provisiofile`.
+Like Make, Docker and Vagrant, Provisio is invoked in the same directory as a `Provisiofile`.
 
     $ provisio up [conf/development.env]
   
-The `.env` file will simply be sourced in a way that makes variables available to your provisioner and child processes. 
-    
-A Provisiofile is essentially (and will be directly translated into) a Bash script. Embedded smart comments control execution and secondary provisio commands invoked within the Provisiofile provide additional functionality. 
+The arbitrary `.env` file will be sourced such that variables will be available to your provisioning script and child processes. See the `env` and `cat` commands below for how Provisio uses environmental variables.
 
+## Provisiofile
 
-
-## Discussion
+Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Embedded smart comments organise and control execution whereas secondary provisio commands provide additional functionality to the provision script. 
  
 ### "Smart" comments
  
@@ -53,7 +51,7 @@ Smart comments remove ugly boilerplate from the provisioning script. They provid
       echo "It worked!" | mail user@gmail.com
     #end
     
-Commented scripts are syntactically valid without Provisio. If they don't use `never` or `if` and don't use secondary provsio commands then they will be self-sufficient since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development, where configurations have not stabalised and reprovisioning is common. 
+Commented scripts are syntactically valid without Provisio. If they don't use `never` or `if` and don't use secondary provsio commands then they will be self-sufficient since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development, where configurations are unstable and reprovisioning is common. 
 
 ### Secondary provisio commands
 
@@ -85,9 +83,9 @@ Lastly,
     
 supports decomposition of provisioning scripts so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is conserved across systems. One-time executions are not.
 
-## Bugs and caveats
+## Contributions
 
-Provisio offers 80% of provisioner functionality for 20% of the effort. How to best avoid it becoming [this](https://xkcd.com/1654/) is still not clear. Expect to fork and use as a foundation for your own must-have provisioning routines. Pull requests welcome if sufficiently general and compelling.
+Provisio offers 80% of provisioner functionality for 20% of the effort. How to best avoid it becoming [like this](https://xkcd.com/1654/) in the future is not clear. Pull requests are welcome, but simply forking and adding your specific must-have provisioning routines may be more productive than trying to solve all the problems for everyone.
 
 
 
