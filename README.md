@@ -14,6 +14,13 @@ In particular, what Provisio provides over and above Bash is the following:
 
 You could do all this in pure Bash, but it would be ugly and annoying.
 
+## Install
+
+Provisio is a single file that is easy to import into VMs and containers via a host file system or the web, e.g.
+
+    $ wget -P /usr/bin/ https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+    $ chmod 755 /usr/bin/provisio
+    
 ## Usage
 The business-end of Provisio is invoking the following command in the same directory as a *Provisiofile*.
 
@@ -80,14 +87,6 @@ Lastly,
     $ provisio include <path>
     
 supports decomposition of provisioning scripts so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is conserved across systems. One-time executions are not.
-
-## Install
-
-Provisio is a single file that is easy to import into VMs and containers via the host file system or the web, e.g.
-
-    $ wget https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
-    $ chmod 755 provisio
-    $ mv provisio /usr/bin/
 
 ## Example
 
