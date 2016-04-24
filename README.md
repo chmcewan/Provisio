@@ -55,7 +55,7 @@ Provisio uses extensive cacheing to create an explicit manifest of dependencies 
 
     $ provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>
     
-performs a managed software install using the local cache. If no package manager is supplied Provisio will try to infer one at runtime which can offer a degree of platform independence for common cases. 
+performs a managed software install using the local cache. If no package manager is supplied, Provisio will try to infer one at runtime which can offer a degree of platform independence for common packages. 
 
 Due to a combination of its ubiquity and terrible website, a special case is provided for installing Oracle's JVM
 
