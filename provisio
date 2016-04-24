@@ -20,16 +20,9 @@ DIGEST=$(echo -n $(pwd) | md5sum | awk '{print $1}')
 SCRATCH=/var/log/provisio/$DIGEST
 
 
-# Ho hum. Some software is "special".
-JDK_VERSION="7u55-b13/jdk-7u55-linux-x64"
-
 
 mkdir -p $SCRATCH
 mkdir -p $BASE
-mkdir -p $BASE/install
-mkdir -p $BASE/download
-mkdir -p $BASE/pip
-mkdir -p $BASE/npm
 if [ ! -f $BASE/manifest ]; then
 	touch $BASE/manifest
 fi
@@ -101,9 +94,11 @@ EOF
 	case "$pkg" in
 
 	yum)
+		mkdir -p $BASE/yum
+
 		cp /etc/yum.conf /etc/yum.conf.bak
 		sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
-		sed -i "s@cachedir=.*@cachedir=$BASE/install/repo@" /etc/yum.conf
+		sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
 
 		if grep -Fxq $tag $BASE/manifest  
 		then
@@ -120,7 +115,7 @@ EOF
 
 
 	pip)
-
+		mkdir -p $BASE/pip
 		if command -v pip >/dev/null 2>&1
 		then
 			:
@@ -151,7 +146,8 @@ EOF
 	   ;;
 
 	npm)
-		
+		mkdir -p $BASE/npm
+
 		if command -v npm >/dev/null 2>&1
 		then
 			:
@@ -188,6 +184,7 @@ EOF
 	   ;;
 
 	npm-global)
+		mkdir -p $BASE/npm
 
 		if command -v npm >/dev/null 2>&1
 		then
@@ -222,10 +219,9 @@ EOF
 
 	jdk)
 
-		jver=$JDK_VERSION
+		jver=${3:-"7u55-b13/jdk-7u55-linux-x64"}
 		jurl="http://download.oracle.com/otn-pub/java/jdk/${jver}"
 		file=$(basename "$jurl")
-
 
 		if command -v wget >/dev/null 2>&1
 		then
@@ -296,12 +292,17 @@ EOF
 	fi
 	wget -q -nc -P $BASE/download $2
 	cp $BASE/download/$file /tmp/$file
-
   	;;
 
 
   set)
-	sed -i "s|^$2=.*|$2=$3|" $4
+	if grep -q "$2=" $4
+	then
+		sed -i "s|^$2=.*|$2=$3|" $4
+	else
+		echo "$2=$3" >> $4
+	fi
+	
   ;;
 
   get)
