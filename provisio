@@ -24,33 +24,33 @@ SCRATCH=/var/log/provisio/$DIGEST
 mkdir -p $SCRATCH
 mkdir -p $BASE
 if [ ! -f $BASE/manifest ]; then
-	touch $BASE/manifest
+    touch $BASE/manifest
 fi
 
 case "$1" in
 
   include)
-	cwd=$(pwd)
-	cd $2
-	provisio up
-	cd $cwd
+    cwd=$(pwd)
+    cd $2
+    provisio up
+    cd $cwd
   ;;
 
   env)
-	if [ "$#" -ne 2 ]; then
-		printenv | grep -E '^[a-z][a-z_]+=.*$'
-	else
-		printenv | grep -E '^[a-z][a-z_]+=.*$' | grep $2
-	fi
+    if [ "$#" -ne 2 ]; then
+        printenv | grep -E '^[a-z][a-z_]+=.*$'
+    else
+        printenv | grep -E '^[a-z][a-z_]+=.*$' | grep $2
+    fi
   ;;
 
   host)
 
-	cat <<EOF > /etc/hosts
+    cat <<EOF > /etc/hosts
 127.0.0.1   $2.local localhost localhost4 localhost.localdomain
 EOF
 
-	cat <<EOF > /etc/sysconfig/network
+    cat <<EOF > /etc/sysconfig/network
 NETWORKING=yes
 NETWORKING_IPV6=no
 HOSTNAME=$2.local
@@ -58,15 +58,15 @@ NOZEROCONF=true
 GATEWAYDEV=$3
 EOF
 
-	# overwriting is a bit unfriendly, but safe and makes indempotent 
-	cat <<EOF > /etc/sysctl.conf
+    # overwriting is a bit unfriendly, but safe and makes indempotent 
+    cat <<EOF > /etc/sysctl.conf
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
 EOF
 
-	source /etc/sysconfig/network-scripts/ifcfg-$3
-	cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-$3
+    source /etc/sysconfig/network-scripts/ifcfg-$3
+    cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-$3
 DEVICE=$DEVICE
 HWADDR=$HWADDR
 TYPE=Ethernet
@@ -87,272 +87,272 @@ EOF
 
   install)
 
-	pkg=$2
-	app=$3
-	tag="$2 $3"
+    pkg=$2
+    app=$3
+    tag="$2 $3"
 
-	case "$pkg" in
+    case "$pkg" in
 
-	yum)
-		mkdir -p $BASE/yum
+    yum)
+        mkdir -p $BASE/yum
 
-		cp /etc/yum.conf /etc/yum.conf.bak
-		sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
-		sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
+        cp /etc/yum.conf /etc/yum.conf.bak
+        sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
+        sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
 
-		if grep -Fxq $tag $BASE/manifest  
-		then
-			yum -y -C install $app
-		else
-			yum -y install $app
-			echo $tag >> $BASE/manifest	
-		fi
+        if grep -Fxq $tag $BASE/manifest  
+        then
+            yum -y -C install $app
+        else
+            yum -y install $app
+            echo $tag >> $BASE/manifest    
+        fi
 
-		mv /etc/yum.conf /etc/yum.conf.temp
-		mv /etc/yum.conf.bak /etc/yum.conf
+        mv /etc/yum.conf /etc/yum.conf.temp
+        mv /etc/yum.conf.bak /etc/yum.conf
 
-  	;;
-
-
-	pip)
-		mkdir -p $BASE/pip
-		if command -v pip >/dev/null 2>&1
-		then
-			:
-		else
-			provisio download https://bootstrap.pypa.io/get-pip.py
-			python /tmp/get-pip.py
-			rm /tmp/get-pip.py
-		fi
-
-		if [ ! -d ~/.provisio-pip ]; then
-			mkdir ~/.provisio-pip
-		fi
-
-		# pip --cache-dir $BASE/pip install $2
-
-		if grep -Fxq $tag $BASE/manifest  
-		then
-			# dont attempt to sync in case read-only
-			cp -fR $BASE/pip/* ~/.provisio-pip/ | true
-			pip --cache-dir ~/.provisio-pip install $app
-		else
-			cp -fR $BASE/pip/* ~/.provisio-pip/ | true
-			pip --cache-dir ~/.provisio-pip install $app
-			cp -fR ~/.provisio-pip/* $BASE/pip/
-			echo $tag >> $BASE/manifest	
-		fi
-		
-	   ;;
-
-	npm)
-		mkdir -p $BASE/npm
-
-		if command -v npm >/dev/null 2>&1
-		then
-			:
-		else
-			provisio install yum npm
-		fi
-
-		if [ -z $app ]; then
-			cp -fR $BASE/npm/* ~/.npm/ | true
-			npm install --no-bin-links
-			cp -fR ~/.npm/* $BASE/npm/
-			for directory in ~/.npm/*/ ; do
-				if grep -Fxq "npm $directory" $BASE/manifest
-				then
-					:
-				else
-					echo "npm $directory" >> $BASE/manifest	
-				fi
-			done
-		else
-			if grep -Fxq $tag $BASE/manifest  
-			then
-				# dont attempt to sync in case read-only
-				cp -fR $BASE/npm/* ~/.npm/ | true
-				npm install $app
-			else
-				cp -fR $BASE/npm/* ~/.npm/ | true
-				npm install $app
-				cp -fR ~/.npm/* $BASE/npm/
-				echo $tag >> $BASE/manifest	
-			fi
-		fi
-
-	   ;;
-
-	npm-global)
-		mkdir -p $BASE/npm
-
-		if command -v npm >/dev/null 2>&1
-		then
-			:
-		else
-			provisio install yum npm
-		fi
-
-		if grep -Fxq $tag $BASE/manifest  
-		then
-			# dont attempt to sync in case read-only
-			cp -fR $BASE/npm/* ~/.npm/ | true
-			npm install -g $app
-		else
-			cp -fR $BASE/npm/* ~/.npm/ | true
-			npm install -g $app
-			cp -fR ~/.npm/* $BASE/npm/
-			echo $tag >> $BASE/manifest	
-		fi
-		
-	;;
+      ;;
 
 
-	rpm)
-		url=$3
-		file=$(basename "$url")
-		provisio download $url
-		rpm -ivh $BASE/download/$file.rpm
-	;;
+    pip)
+        mkdir -p $BASE/pip
+        if command -v pip >/dev/null 2>&1
+        then
+            :
+        else
+            provisio download https://bootstrap.pypa.io/get-pip.py
+            python /tmp/get-pip.py
+            rm /tmp/get-pip.py
+        fi
 
-	# Special cases...
+        if [ ! -d ~/.provisio-pip ]; then
+            mkdir ~/.provisio-pip
+        fi
 
-	jdk)
+        # pip --cache-dir $BASE/pip install $2
 
-		jver=${3:-"7u55-b13/jdk-7u55-linux-x64"}
-		jurl="http://download.oracle.com/otn-pub/java/jdk/${jver}"
-		file=$(basename "$jurl")
+        if grep -Fxq $tag $BASE/manifest  
+        then
+            # dont attempt to sync in case read-only
+            cp -fR $BASE/pip/* ~/.provisio-pip/ | true
+            pip --cache-dir ~/.provisio-pip install $app
+        else
+            cp -fR $BASE/pip/* ~/.provisio-pip/ | true
+            pip --cache-dir ~/.provisio-pip install $app
+            cp -fR ~/.provisio-pip/* $BASE/pip/
+            echo $tag >> $BASE/manifest    
+        fi
+        
+       ;;
 
-		if command -v wget >/dev/null 2>&1
-		then
-			:
-		else
-			provisio install wget
-		fi
+    npm)
+        mkdir -p $BASE/npm
 
-		if command -v rpm >/dev/null 2>&1
-		then
+        if command -v npm >/dev/null 2>&1
+        then
+            :
+        else
+            provisio install yum npm
+        fi
 
-			if [ ! -f "$BASE/download/$file.rpm" ]; then
-				echo "jdk $jver" >> $BASE/manifest	
-			fi
-			wget -q -P $BASE/download --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "${jurl}.rpm"
-			rpm -ivh $BASE/download/$file.rpm
+        if [ -z $app ]; then
+            cp -fR $BASE/npm/* ~/.npm/ | true
+            npm install --no-bin-links
+            cp -fR ~/.npm/* $BASE/npm/
+            for directory in ~/.npm/*/ ; do
+                if grep -Fxq "npm $directory" $BASE/manifest
+                then
+                    :
+                else
+                    echo "npm $directory" >> $BASE/manifest    
+                fi
+            done
+        else
+            if grep -Fxq $tag $BASE/manifest  
+            then
+                # dont attempt to sync in case read-only
+                cp -fR $BASE/npm/* ~/.npm/ | true
+                npm install $app
+            else
+                cp -fR $BASE/npm/* ~/.npm/ | true
+                npm install $app
+                cp -fR ~/.npm/* $BASE/npm/
+                echo $tag >> $BASE/manifest    
+            fi
+        fi
 
-		else
+       ;;
 
-			if [ ! -f "$BASE/download/$file.tar.gz" ]; then
-				echo "jdk $jver" >> $BASE/manifest	
-			fi
+    npm-global)
+        mkdir -p $BASE/npm
 
-			wget -q -P $BASE/download --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "${jurl}.tar.gz"
-			tar xzf $BASE/download/$file.tar.gz -C /tmp/
-			rsync -a /tmp/jdk*/ /usr/local/
+        if command -v npm >/dev/null 2>&1
+        then
+            :
+        else
+            provisio install yum npm
+        fi
 
-		fi
-	;;
-
-
-	# Perhaps we were just given a package, assume an OS install and try to infer manager
-	*)
-
-		
-		if command -v yum >/dev/null 2>&1
-		then
-			provisio install yum $2
-		elif command -v rpm >/dev/null 2>&1
-		then
-			provisio install rpm $2
-		elif command -v apt-get >/dev/null 2>&1
-		then
-			provisio install apt $2
-		else
-			echo "ERROR: unknown package manager $2 and cannot infer platform's package manager to install package $2"
-			exit 1
-		fi
+        if grep -Fxq $tag $BASE/manifest  
+        then
+            # dont attempt to sync in case read-only
+            cp -fR $BASE/npm/* ~/.npm/ | true
+            npm install -g $app
+        else
+            cp -fR $BASE/npm/* ~/.npm/ | true
+            npm install -g $app
+            cp -fR ~/.npm/* $BASE/npm/
+            echo $tag >> $BASE/manifest    
+        fi
+        
+    ;;
 
 
-	;;
+    rpm)
+        url=$3
+        file=$(basename "$url")
+        provisio download $url
+        rpm -ivh $BASE/download/$file.rpm
+    ;;
 
-  	esac
-	;;
+    # Special cases...
+
+    jdk)
+
+        jver=${3:-"7u55-b13/jdk-7u55-linux-x64"}
+        jurl="http://download.oracle.com/otn-pub/java/jdk/${jver}"
+        file=$(basename "$jurl")
+
+        if command -v wget >/dev/null 2>&1
+        then
+            :
+        else
+            provisio install wget
+        fi
+
+        if command -v rpm >/dev/null 2>&1
+        then
+
+            if [ ! -f "$BASE/download/$file.rpm" ]; then
+                echo "jdk $jver" >> $BASE/manifest    
+            fi
+            wget -q -P $BASE/download --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "${jurl}.rpm"
+            rpm -ivh $BASE/download/$file.rpm
+
+        else
+
+            if [ ! -f "$BASE/download/$file.tar.gz" ]; then
+                echo "jdk $jver" >> $BASE/manifest    
+            fi
+
+            wget -q -P $BASE/download --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "${jurl}.tar.gz"
+            tar xzf $BASE/download/$file.tar.gz -C /tmp/
+            rsync -a /tmp/jdk*/ /usr/local/
+
+        fi
+    ;;
+
+
+    # Perhaps we were just given a package, assume an OS install and try to infer manager
+    *)
+
+        
+        if command -v yum >/dev/null 2>&1
+        then
+            provisio install yum $2
+        elif command -v rpm >/dev/null 2>&1
+        then
+            provisio install rpm $2
+        elif command -v apt-get >/dev/null 2>&1
+        then
+            provisio install apt $2
+        else
+            echo "ERROR: unknown package manager $2 and cannot infer platform's package manager to install package $2"
+            exit 1
+        fi
+
+
+    ;;
+
+      esac
+    ;;
 
   download)
 
-	if command -v wget >/dev/null 2>&1
-	then
-		:
-	else
-		provisio install wget
-	fi
+    if command -v wget >/dev/null 2>&1
+    then
+        :
+    else
+        provisio install wget
+    fi
 
-	file=$(basename "$2")
-	if [ ! -f $BASE/download/$file ]; then
-		echo "download $2" >> $BASE/manifest	
-	fi
-	wget -q -nc -P $BASE/download $2
-	cp $BASE/download/$file /tmp/$file
-  	;;
+    file=$(basename "$2")
+    if [ ! -f $BASE/download/$file ]; then
+        echo "download $2" >> $BASE/manifest    
+    fi
+    wget -q -nc -P $BASE/download $2
+    cp $BASE/download/$file /tmp/$file
+      ;;
 
 
   set)
-	if grep -q "$2=" $4
-	then
-		sed -i "s|^$2=.*|$2=$3|" $4
-	else
-		echo "$2=$3" >> $4
-	fi
-	
+    if grep -q "$2=" $4
+    then
+        sed -i "s|^$2=.*|$2=$3|" $4
+    else
+        echo "$2=$3" >> $4
+    fi
+    
   ;;
 
   get)
-	awk -F\= "\$1==\"$2\"{gsub(/\"/,\"\",\$2); print \$2}" $3
+    awk -F\= "\$1==\"$2\"{gsub(/\"/,\"\",\$2); print \$2}" $3
   ;;
 
   cat)
-	# log interpolation for debugging
-	perl -pe 's/\{\{(.*?)\}\}/$ENV{$1}/g' $2 >&2
-	perl -pe 's/\{\{(.*?)\}\}/$ENV{$1}/g' $2
+    # log interpolation for debugging
+    perl -pe 's/\{\{(.*?)\}\}/$ENV{$1}/g' $2 >&2
+    perl -pe 's/\{\{(.*?)\}\}/$ENV{$1}/g' $2
     ;;
 
 
   up)
 
-	if [ ! -f ./$PROVISIOFILE ]; then
-		echo "ERROR: No '$PROVISIOFILE' found in current directory!"
-		exit 1
-	fi
+    if [ ! -f ./$PROVISIOFILE ]; then
+        echo "ERROR: No '$PROVISIOFILE' found in current directory!"
+        exit 1
+    fi
 
-	if [ ! -z "$2" ]; then
-		# import environmental variables
-		set -a
-		source $2
-		set +a
-	fi
+    if [ ! -z "$2" ]; then
+        # import environmental variables
+        set -a
+        source $2
+        set +a
+    fi
 
-	
-	cp ./$PROVISIOFILE $SCRATCH/$PROVISIOFILE.sh
-
-
-	export SCRATCHDIR=$SCRATCH
-
-	# complex tasks
-	perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+if\s+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
-	perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+unless\s+(\S+)(.*?)#end|if [ -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
+    
+    cp ./$PROVISIOFILE $SCRATCH/$PROVISIOFILE.sh
 
 
-	# primitive tasks
-	perl -0777 -pi -e 's|#task\s+(\S+)\s+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
-	perl -0777 -pi -e 's|#task\s+(\S+)\s+once(.*?)#end|if [ ! -f $ENV{SCRATCHDIR}/$1.success ]; then\nexec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
-	perl -0777 -pi -e 's|#task\s+(\S+)\s+always(.*?)#end|exec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\";  exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh	
+    export SCRATCHDIR=$SCRATCH
+
+    # complex tasks
+    perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+if\s+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+unless\s+(\S+)(.*?)#end|if [ -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
 
 
-	SCRATCHDIR=$SCRATCH bash $SCRATCH/$PROVISIOFILE.sh
-	
-	;;
+    # primitive tasks
+    perl -0777 -pi -e 's|#task\s+(\S+)\s+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\s+(\S+)\s+once(.*?)#end|if [ ! -f $ENV{SCRATCHDIR}/$1.success ]; then\nexec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\s+(\S+)\s+always(.*?)#end|exec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\";  exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh    
+
+
+    SCRATCHDIR=$SCRATCH bash $SCRATCH/$PROVISIOFILE.sh
+    
+    ;;
 
   *)
-	echo ""
+    echo ""
     echo "Usage: provisio up [environment-file]"
     echo ""
     echo "       provisio download <URL>"    
@@ -363,7 +363,7 @@ EOF
     echo "       provisio get <key> <file>"    
     echo "       provisio cat <template>"
     echo "       provisio env [filter]"        
-	echo ""
+    echo ""
     exit 1
     ;;
 esac
