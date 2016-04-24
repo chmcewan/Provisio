@@ -40,6 +40,8 @@ TODO
 Annotations remove ugly boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
 
     #task <name> [ once | always | never ] [ if|unless <variable> ]
+        ...
+    #end
 
 Annotated scripts that don't use `never` or `if` may have no dependency on Provisio, since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development when configurations are unstable and reprovisioning is common. 
 
