@@ -37,7 +37,7 @@ TODO
  
 ## Annotations
  
-Annotations remove ugly boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
+Annotations remove fragile boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
 
     #task <name> [ once | always | never ] [ if|unless <variable> ]
         ...
