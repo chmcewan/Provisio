@@ -53,7 +53,7 @@ In addition to the primary user-facing command (`up`), Provisio provides a small
 
 #### Dependency management
 
-Provisio uses extensive cacheing to create an explicit manifest of dependencies and support off-line, read-only (e.g. CD-ROM) and archival provisioning. 
+Provisio uses cacheing to create an explicit manifest of dependencies and support off-line, read-only (e.g. CD-ROM) and archival provisioning. The cache is kept in a `.provisio` directory beside the Provisiofile.
 
     $ provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>
     
@@ -67,20 +67,20 @@ For websites that are more accomodating
 
     $ provisio download <url>
 
-downloads and caches a remote dependency, such as a tarball. The (possibly cached) file will be "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
+downloads and caches a remote dependency, such as a tarball. The (possibly cached) file will appear "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
 
 #### Configuration utilities
 
-Provisio also provides some simple commands to aid local configuration and reduce line noise.
+Provisio provides some simple commands to aid local configuration and reduce line noise.
 
     $ provisio set <key> <value> <file>
     $ provisio get <key> <file>
 
-allows you to treat config files that have a `key=value` syntax as a persistent hash table.
+allows config files that have the common `key=value` syntax to be treated as a persistent hash table.
 
     $ provisio cat <file>
     
-streams `<file>` to stdout while substituting all occurences of `{{foo}}` with the environmental variable `foo`. This is sufficient for most paramaterised configuration file needs. 
+streams `<file>` to stdout while substituting all occurences of `{{foo}}` with the environmental variable `foo`. This is sufficient for many paramaterised configuration file needs. 
 
 Provision-time environmental variables can be persisted on the provisioned system, e.g. to be sourced by init scripts
 
