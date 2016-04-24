@@ -80,17 +80,17 @@ allows you to treat config files that have a `key=value` syntax as a persistent 
     
 streams `<file>` to stdout while substituting all occurences of `{{foo}}` with the environmental variable `foo`. This is sufficient for most paramaterised configuration file needs. 
 
-Provision-time environmental variables can be propogated into the provisioned system (e.g. to be sourced by init scripts) using
+Provision-time environmental variables can be persisted on the provisioned system, e.g. to be sourced by init scripts
 
     $ provisio env [filter] > /some/file
     
-where `[filter]` can be used to grep a specific subset of variables. Additionally, environmental variables that begin with an underscore ("_") will be considered "private" and, although available during provisioning, will not be echoed and persisted in the provisioned system. This is useful for passwords and similar.
+where `[filter]` can be used to grep a specific subset of variables based on e.g. prefix. Additionally, environmental variables that begin with an underscore ("_") are considered "private" and, although available during provisioning, will never be echoed and persisted on the provisioned system. This is obviously useful for passwords and so on.
 
 Lastly, 
 
     $ provisio include <path>
     
-supports decomposing Provisiofiles so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is shared across systems whereas execution state is not.
+supports decomposing Provisiofiles so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is shared across systems, whereas execution state is not.
 
 ## Contributions
 
