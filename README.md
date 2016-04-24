@@ -29,7 +29,7 @@ The arbitrary `.env` file will be sourced such that variables will be available 
 
 ## Provisiofile
 
-Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Embedded annotations organise and control execution and secondary provisio commands provide additional functionality. It should all seem pretty obvious after an example: 
+Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Annotations organise and control execution and secondary commands provide additional functionality. It should all seem pretty obvious after an example: 
  
 ```
 TODO
@@ -37,11 +37,13 @@ TODO
  
 ## Annotations
  
-Annotations remove ugly boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. The syntax is:
+Annotations remove ugly boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
 
     #task <name> [ once | always | never ] [ if|unless <variable> ]
 
-Annotated scripts that don't use `never` or `if` can be distributed independently of Provisio, since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development when configurations are unstable and reprovisioning is common. 
+Annotated scripts that don't use `never` or `if` may have no dependency on Provisio, since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development when configurations are unstable and reprovisioning is common. 
+
+Conditional tasks only check that `$<variable>` is (not) empty. More sophisticated conditional logic should probably be part of the task and expressed in Bash.
 
 ## Secondary commands
 
