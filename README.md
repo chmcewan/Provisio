@@ -94,9 +94,7 @@ Lastly,
     
 supports decomposing Provisiofiles so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is shared across systems, whereas execution state is not.
 
-## Contributions
 
-Provisio offers 80% of provisioner functionality for 20% of the effort. The line between useful utility and [universal install script](https://xkcd.com/1654/) is a fine one. Pull requests are welcome, but simply forking and adding your specific must-have provisioning routines may be more productive than trying to solve all the problems for everyone. Have fun!
 
 
 
