@@ -337,14 +337,14 @@ EOF
     export SCRATCHDIR=$SCRATCH
 
     # complex tasks
-    perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+if\s+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
-    perl -0777 -pi -e 's|#task\s+(\S+)\s+(\S+)\s+unless\s+(\S+)(.*?)#end|if [ -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+(\S+)\h+if\h+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+(\S+)\h+unless\h+(\S+)(.*?)#end|if [ -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
 
 
     # primitive tasks
-    perl -0777 -pi -e 's|#task\s+(\S+)\s+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
-    perl -0777 -pi -e 's|#task\s+(\S+)\s+once(.*?)#end|if [ ! -f $ENV{SCRATCHDIR}/$1.success ]; then\nexec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
-    perl -0777 -pi -e 's|#task\s+(\S+)\s+always(.*?)#end|exec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\";  exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh    
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f $ENV{SCRATCHDIR}/$1.success ]; then\nexec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|exec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\";  exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh    
 
 
     SCRATCHDIR=$SCRATCH bash $SCRATCH/$PROVISIOFILE.sh
