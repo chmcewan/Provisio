@@ -114,6 +114,26 @@ EOF
 
       ;;
 
+    yum-group)
+        mkdir -p $BASE/yum
+
+        cp /etc/yum.conf /etc/yum.conf.bak
+        sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
+        sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
+
+        if grep -Fxq $tag $BASE/manifest  
+        then
+            yum -y -C groupinstall $app
+        else
+            yum -y groupinstall $app
+            echo $tag >> $BASE/manifest    
+        fi
+
+        mv /etc/yum.conf /etc/yum.conf.temp
+        mv /etc/yum.conf.bak /etc/yum.conf
+
+      ;;
+
 
     pip)
         mkdir -p $BASE/pip
