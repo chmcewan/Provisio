@@ -23,6 +23,7 @@ SCRATCH=/var/log/provisio/$DIGEST
 
 mkdir -p $SCRATCH
 mkdir -p $BASE
+mkdir -p $BASE/rpm-keys
 if [ ! -f $BASE/manifest ]; then
     touch $BASE/manifest
 fi
@@ -105,6 +106,26 @@ EOF
             yum -y -C install $app
         else
             yum -y install $app
+            echo $tag >> $BASE/manifest    
+        fi
+
+        mv /etc/yum.conf /etc/yum.conf.temp
+        mv /etc/yum.conf.bak /etc/yum.conf
+
+      ;;
+
+    yum-group)
+        mkdir -p $BASE/yum
+
+        cp /etc/yum.conf /etc/yum.conf.bak
+        sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
+        sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
+
+        if grep -Fxq $tag $BASE/manifest  
+        then
+            yum -y -C groupinstall "$app"
+        else
+            yum -y groupinstall "$app"
             echo $tag >> $BASE/manifest    
         fi
 
@@ -213,6 +234,19 @@ EOF
         file=$(basename "$url")
         provisio download $url
         rpm -ivh $BASE/download/$file.rpm
+    ;;
+
+    rpm-key)
+        url=$4
+        if grep -Fxq "import-$app" $BASE/manifest  
+        then
+            rpm --import $BASE/rpm-keys/$app
+        else
+            curl -o $BASE/rpm-keys/$app "$url"
+            cat $BASE/rpm-keys/$app
+            rpm --import $BASE/rpm-keys/$app
+            echo "import-$app" >> $BASE/manifest  
+        fi
     ;;
 
     # Special cases...

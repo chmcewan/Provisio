@@ -55,7 +55,8 @@ In addition to the primary user-facing command (`up`), Provisio provides a small
 
 Provisio uses cacheing to create an explicit manifest of dependencies and support off-line, read-only (e.g. CD-ROM) and archival provisioning. The cache is kept in a `.provisio` directory beside the Provisiofile.
 
-    $ provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>
+    $ provisio install [ yum | yum-group | apt | rpm | pip | npm | npm-global ] <package>
+    $ provisio install rpm-key <package> <url>
     
 performs a managed software install using the local cache. If no package manager is supplied, Provisio will try to infer one at runtime which can offer a degree of platform independence for common packages. 
 
