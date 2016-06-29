@@ -215,6 +215,19 @@ EOF
         rpm -ivh $BASE/download/$file.rpm
     ;;
 
+    rpm-key)
+        url=$3
+        if grep -Fxq "import-$app" $BASE/manifest  
+        then
+            rpm --import $BASE/rpm-keys/$app
+        else
+            curl -o $BASE/rpm-keys/$app "$url"
+            cat $BASE/rpm-keys/$app
+            rpm --import $BASE/rpm-keys/$app
+            echo "import-$app" >> $BASE/manifest  
+        fi
+    ;;
+
     # Special cases...
 
     jdk)
