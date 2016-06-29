@@ -123,9 +123,9 @@ EOF
 
         if grep -Fxq $tag $BASE/manifest  
         then
-            yum -y -C groupinstall $app
+            yum -y -C groupinstall "$app"
         else
-            yum -y groupinstall $app
+            yum -y groupinstall "$app"
             echo $tag >> $BASE/manifest    
         fi
 
