@@ -216,7 +216,7 @@ EOF
     ;;
 
     rpm-key)
-        url=$3
+        url=$4
         if grep -Fxq "import-$app" $BASE/manifest  
         then
             rpm --import $BASE/rpm-keys/$app
