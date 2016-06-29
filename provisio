@@ -23,6 +23,7 @@ SCRATCH=/var/log/provisio/$DIGEST
 
 mkdir -p $SCRATCH
 mkdir -p $BASE
+mkdir -p $BASE/rpm-keys
 if [ ! -f $BASE/manifest ]; then
     touch $BASE/manifest
 fi
