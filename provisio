@@ -357,7 +357,6 @@ EOF
             cat $SCRATCH/$2.log
         fi
     else
-
         for i in $(ls -tr $SCRATCH/*.log) 
         do 
             nm=$(basename $i | cut -f 1 -d '.')
@@ -368,6 +367,7 @@ EOF
         done
     fi
 
+    ;;
 
   clean)
 
@@ -380,9 +380,13 @@ EOF
         rm -Rf $BASE/
     fi
 
+    ;;
+
   update)
 
       curl -o $0 https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+
+    ;;
 
   up)
 
