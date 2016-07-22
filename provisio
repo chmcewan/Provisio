@@ -350,6 +350,40 @@ EOF
     ;;
 
 
+  log)
+
+    if [ ! -z "$2" ]; then
+        if [ -f $SCRATCH/$2.log ]; then
+            cat $SCRATCH/$2.log
+        fi
+    else
+
+        for i in $(ls -tr $SCRATCH/*.log) 
+        do 
+            nm=$(basename $i | cut -f 1 -d '.')
+            echo -------------------------------------------------
+            echo $nm
+            echo ------------------------------------------------- 
+            cat $SCRATCH/$nm.log
+        done
+    fi
+
+
+  clean)
+
+    rm -Rf $SCRATCH/
+    if [ "all" == "$2" ]; then
+        rm -Rf /var/log/provisio/
+    fi
+
+    if [ "cache" == "$2" ]; then
+        rm -Rf $BASE/
+    fi
+
+  update)
+
+      curl -o $0 https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+
   up)
 
     if [ ! -f ./$PROVISIOFILE ]; then
@@ -387,7 +421,7 @@ EOF
 
   *)
     echo ""
-    echo "Usage: provisio up [environment-file]"
+    echo "Usage: provisio up [environment]"
     echo ""
     echo "       provisio download <URL>"    
     echo "       provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>"
@@ -398,6 +432,10 @@ EOF
     echo "       provisio cat <template>"
     echo "       provisio env [filter]"        
     echo ""
+    echo "       provisio log [task]"
+    echo "       provisio clean [ all | cache ]"    
+    echo ""
+
     exit 1
     ;;
 esac
