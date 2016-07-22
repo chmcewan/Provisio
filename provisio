@@ -350,7 +350,7 @@ EOF
     ;;
 
 
-  log)
+  logs)
 
     if [ ! -z "$2" ]; then
         if [ -f $SCRATCH/$2.log ]; then
@@ -432,8 +432,9 @@ EOF
     echo "       provisio cat <template>"
     echo "       provisio env [filter]"        
     echo ""
-    echo "       provisio log [task]"
-    echo "       provisio clean [ all | cache ]"    
+    echo "       provisio logs [task]"
+    echo "       provisio clean [ all | cache ]"  
+    echo "       provisio update"        
     echo ""
 
     exit 1
