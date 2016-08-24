@@ -233,7 +233,7 @@ EOF
         url=$3
         file=$(basename "$url")
         provisio download $url
-        rpm -ivh $BASE/download/$file.rpm
+        rpm -ivh /tmp/$file
     ;;
 
     rpm-key)
