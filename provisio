@@ -233,19 +233,19 @@ EOF
         url=$3
         file=$(basename "$url")
         provisio download $url
-        rpm -ivh /tmp/$file
+        rpm -ivh --replacepkgs /tmp/$file
     ;;
 
     rpm-key)
         url=$4
-        if grep -Fxq "import-$app" $BASE/manifest  
+        if grep -Fxq "import $app" $BASE/manifest  
         then
             rpm --import $BASE/rpm-keys/$app
         else
             curl -o $BASE/rpm-keys/$app "$url"
             cat $BASE/rpm-keys/$app
+            echo "import $app" >> $BASE/manifest
             rpm --import $BASE/rpm-keys/$app
-            echo "import-$app" >> $BASE/manifest  
         fi
     ;;
 
