@@ -416,7 +416,9 @@ EOF
     fi 
 
     pushd $BASE/git/$repo
-        # git pull https://github.com/$org/$repo
+        if [ ! -z "$3" ]; then
+            git pull https://github.com/$org/$repo
+        fi
         provisio up $3
     popd
 
