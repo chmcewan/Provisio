@@ -399,7 +399,7 @@ EOF
     env=$3
     force=
       
-    if [ "$name" = "-f" ]; then
+    if [ "$name" == "-f" ]; then
         name=$3
         env=$4 
         force=1           
