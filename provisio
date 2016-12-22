@@ -398,7 +398,6 @@ EOF
     name=$2
     org=$(echo -n $name | sed 's@/.*@@')
     repo=$(echo -n $name | sed 's@.*/@@')
-    shift
 
     if command -v git >/dev/null 2>&1
     then
@@ -418,7 +417,7 @@ EOF
 
     pushd $BASE/git/$repo
         # git pull https://github.com/$org/$repo
-        provisio up $@
+        provisio up $3
     popd
 
 
