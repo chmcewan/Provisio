@@ -396,8 +396,8 @@ EOF
 
   pull)
     name=$2
-    org=$(echo -n $name | sed '@/.*@@')
-    repo=$(echo -n $name | sed '@.*/@@')
+    org=$(echo -n $name | sed 's@/.*@@')
+    repo=$(echo -n $name | sed 's@.*/@@')
     shift
 
     if command -v git >/dev/null 2>&1
