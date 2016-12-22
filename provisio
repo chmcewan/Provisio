@@ -396,6 +396,15 @@ EOF
 
   pull)
     name=$2
+    env=$3
+    force=
+      
+    if [ "$name" = "-f" ]; then
+        name=$3
+        env=$4 
+        force=1           
+    fi
+    
     org=$(echo -n $name | sed 's@/.*@@')
     repo=$(echo -n $name | sed 's@.*/@@')
 
@@ -416,10 +425,10 @@ EOF
     fi 
 
     pushd $BASE/git/$repo
-        if [ ! -z "$3" ]; then
+        if [ ! -z "$force" ]; then
             git pull https://github.com/$org/$repo
         fi
-        provisio up $3
+        provisio up $env
     popd
 
 
