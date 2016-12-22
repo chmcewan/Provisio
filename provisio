@@ -390,7 +390,7 @@ EOF
 
   update)
 
-      curl -o $0 https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+      curl -s -o $0 https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
 
     ;;
 
