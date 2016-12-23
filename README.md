@@ -36,17 +36,15 @@ It should all seem pretty obvious after an example.
 TODO
 ```
  
-### Annotations
- 
-Annotations remove fragile boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
+Clearly, the syntax of annotations is
 
     #task <name> [ once | always | never ] [ if|unless <variable> ]
         ...
     #end
 
-Annotated scripts that don't use `never` or `if` may have no dependency on Provisio, since there is usually no distinction between `once` and `always` in production. In such cases, Provisio can still aid development when configurations are unstable and reprovisioning is common. 
+Conditional tasks only check that `$<variable>` is (not) empty. More sophisticated conditional logic should probably be part of the task.
 
-Conditional tasks only check that `$<variable>` is (not) empty. More sophisticated conditional logic should probably be part of the task and expressed in Bash.
+Often there is no distinction between `once` and `always` in production. Provisio can still be useful during development, when configurations are unstable and reprovisioning is common. In the most restricted cases, where no other provisio dependencies exist, running `sudo sh Provisiofile` should be equivalent to `provisio up`.
 
 ### Dependency management
 
