@@ -24,7 +24,9 @@ Like Make, Docker and Vagrant, Provisio is invoked in the same directory as a `P
 
     $ provisio up
   
-Unlike Make, Docker and Vagrant, a `Provisiofile` is just an annotated Bash script. Annotations organise and control script execution. Provisio commands abstract common congiguration and dependency management tasks. The Provisiofile emphasises the declarative semantics of your provisioning steps; retaining the full power of the shell without the boilerplate and line noise.
+Unlike Make, Docker and Vagrant, a `Provisiofile` is just an annotated Bash script. Annotations organise and control script execution. Provisio commands abstract common congiguration and dependency management tasks. 
+
+Like Chef, Puppet and other tools, the Provisiofile emphasises the declarative semantics of your provisioning process. Unlike those tools, the Provisiofile retains the full power of the shell.
 
 ## The Provisiofile
 
