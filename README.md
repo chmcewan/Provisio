@@ -2,40 +2,39 @@
 The lightweight provisioner
 
 ## Synopsis
-Provisio adds just enough syntactic sugar to Bash scripts to make them more suitable for provisioning servers, virtual machines and containers. It does not rely on embedded domain-specific languages, YAML files, runtime environments, daemons or whatever. It's just Bash with some tasteful annotations and declarative one-liners. 
+Provisio adds just enough syntactic sugar to shell scripts to make them more suitable for provisioning servers, virtual machines and containers. It does not rely on embedded domain-specific languages, YAML files, runtime environments, daemons or whatever. It's just Bash with some tasteful annotations and declarative one-liners. 
 
-Provisio provides the following over and above Bash:
+Provisio provides the following benefits over a pure shell script:
 
-* One-time execution of blocks of code
+* Idempotency (i.e. one-time execution of blocks of code)
 * Local cacheing of dependencies for off-line or read-only provisioning
-* Fail-fast error handling and transparent log redirection
+* Fail-fast error handling with clean reporting and transparent log redirection
 * A distinction between public and private environmental variables
 * High-level utility functions for common provisioning tasks 
 
-You could do all of this in regular Bash yourself, but it would be ugly and annoying.
+Of course, you could do all of this in your provisioning script, but it would be ugly and annoying.
 
 ## Quick start
 
-Provisio is a single file that is easy to import from the host file system or the web, e.g.
+Provisio is a single file that is easy to inject into servers, virtual machines and containers, e.g.
 
-    $ wget -P /usr/bin/ https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
-    $ chmod 755 /usr/bin/provisio
+    $ curl -s https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio | sudo sh
     
 Like Make, Docker and Vagrant, Provisio is invoked in the same directory as a `Provisiofile`.
 
-    $ provisio up [conf/development.env]
+    $ provisio up
   
-The arbitrary `.env` file will be sourced such that variables will be available to your provisioning script and child processes. See the `env` and `cat` commands below for examples of how Provisio uses environmental variables.
+Unlike Make, Docker and Vagrant, a `Provisiofile` is just an annotated Bash script. Annotations organise and control script execution. Provisio commands abstract common congiguration and dependency management tasks. The Provisiofile emphasises the declarative semantics of your provisioning steps; retaining the full power of the shell without the boilerplate and line noise.
 
-## Provisiofile
+## The Provisiofile
 
-Unlike Make, Docker and Vagrant, a Provisiofile is essentially a Bash script. Annotations organise and control execution and secondary commands provide additional functionality. It should all seem pretty obvious after an example: 
+It should all seem pretty obvious after an example. 
  
 ```
 TODO
 ```
  
-## Annotations
+### Annotations
  
 Annotations remove fragile boilerplate from the provisioning script. They provide clean reporting of how code blocks are being executed with proper error handling and redirection of command output to a persistent log. Their syntax is:
 
@@ -47,11 +46,7 @@ Annotated scripts that don't use `never` or `if` may have no dependency on Provi
 
 Conditional tasks only check that `$<variable>` is (not) empty. More sophisticated conditional logic should probably be part of the task and expressed in Bash.
 
-## Secondary commands
-
-In addition to the primary user-facing command (`up`), Provisio provides a small collection of commands to invoke from the Provisiofile that simplify dependency management and configuration.
-
-#### Dependency management
+### Dependency management
 
 Provisio uses cacheing to create an explicit manifest of dependencies and support off-line, read-only (e.g. CD-ROM) and archival provisioning. The cache is kept in a `.provisio` directory beside the Provisiofile.
 
@@ -70,7 +65,7 @@ For websites that are more accomodating
 
 downloads and caches a remote dependency, such as a tarball. The (possibly cached) file will appear "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
 
-#### Configuration utilities
+### Configuration utilities
 
 Provisio provides some simple commands to aid local configuration and reduce line noise.
 
