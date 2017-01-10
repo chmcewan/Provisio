@@ -30,6 +30,7 @@ SCRATCH=/var/log/provisio/$DIGEST
 mkdir -p $SCRATCH
 mkdir -p $BASE
 mkdir -p $BASE/rpm-keys
+mkdir -p $BASE/docker-images
 if [ ! -f $BASE/manifest ]; then
     touch $BASE/manifest
 fi
@@ -167,7 +168,7 @@ EOF
             cp -fR $BASE/pip/* ~/.provisio-pip/ | true
             pip --cache-dir ~/.provisio-pip install $app
             cp -fR ~/.provisio-pip/* $BASE/pip/
-            echo $tag >> $BASE/manifest    
+            echo $tag >> $BASE/manifest
         fi
         
        ;;
@@ -254,6 +255,28 @@ EOF
             rpm --import $BASE/rpm-keys/$app
         fi
     ;;
+
+    docker)
+        if command -v docker >/dev/null 2>&1
+        then
+            :
+        else
+            provisio install docker
+            systemctl start docker
+            systemctl enable docker
+        fi
+
+        image=${app/":"/"-DOCKERCOLON-"}
+        image=${image/"/"/"-DOCKERFS-"}
+        if [ ! -f "${BASE}/docker-images/${image}.tar" ]
+        then
+            echo "docker $app" >> "${BASE}/manifest"
+            docker pull $app
+            docker save $app > "${BASE}/docker-images/${image}.tar"
+        else
+            docker load "${BASE}/docker-images/${image}.tar"
+        fi
+          ;;
 
     # Special cases...
 
