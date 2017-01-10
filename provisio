@@ -428,7 +428,9 @@ EOF
         if [ ! -z "$force" ]; then
             git pull https://github.com/$org/$repo
         fi
-        provisio up $env
+        if [ -e ./Provisiofile ]; then
+            provisio up $env
+        fi
     popd
 
 
