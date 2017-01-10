@@ -9,11 +9,11 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
-if [ ! -e /usr/bin/provisio ]; then
+#if [ ! -e /usr/bin/provisio ]; then
     # yum -y -q install perl curl
-    curl -s -o /usr/bin/provisio https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
-    chmod 755 /usr/bin/provisio
-fi
+#    curl -s -o /usr/bin/provisio https://raw.githubusercontent.com/chmcewan/Provisio/master/provisio
+#    chmod 755 /usr/bin/provisio
+#fi
 
 #
 # NB: $BASE directory may exist on a shared host drive
