@@ -274,7 +274,7 @@ EOF
             docker pull $app
             docker save $app > "${BASE}/docker-images/${image}.tar"
         else
-            docker load "${BASE}/docker-images/${image}.tar"
+            docker load -i "${BASE}/docker-images/${image}.tar"
         fi
           ;;
 
