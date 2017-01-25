@@ -110,8 +110,7 @@ EOF
             echo $tag >> $BASE/manifest    
         fi
 
-        mv /etc/yum.conf /etc/yum.conf.temp
-        mv /etc/yum.conf.bak /etc/yum.conf
+        cp -f /etc/yum.conf.bak /etc/yum.conf
 
       ;;
 
@@ -130,8 +129,7 @@ EOF
             echo $tag >> $BASE/manifest    
         fi
 
-        mv /etc/yum.conf /etc/yum.conf.temp
-        mv /etc/yum.conf.bak /etc/yum.conf
+        cp -f /etc/yum.conf.bak /etc/yum.conf
 
       ;;
 
