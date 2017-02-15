@@ -55,15 +55,11 @@ Provisio uses cacheing to create an explicit manifest of dependencies and suppor
     
 performs a managed software install using the local cache. If no package manager is supplied, Provisio will try to infer one at runtime which can offer a degree of platform independence for common packages. 
 
-Due to a combination of its ubiquity and terrible website, a special case is provided for installing Oracle's JVM
-
-    $ provisio install jdk [7u55-b13/jdk-7u55-linux-x64]
-
-For websites that are more accomodating
+For all other cases
 
     $ provisio download <url>
 
-downloads and caches a remote dependency, such as a tarball. The (possibly cached) file will appear "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
+downloads and caches a remote dependency. The (possibly cached) file will appear "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
 
 ### Configuration utilities
 
