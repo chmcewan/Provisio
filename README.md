@@ -33,7 +33,39 @@ Like Chef, Puppet and other tools, the Provisiofile emphasises the declarative s
 It should all seem pretty obvious after an example. 
  
 ```
-TODO
+#task harden_ssh once
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
+    echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+#end
+
+#task install_dependencies once
+    provisio install zlib-devel 
+    provisio install yum python-devel      
+    provisio install pip uwsgi
+    provisio install pip flask    
+#end
+
+#task install_python_devtools once if development
+    provisio install pip pytest
+    provisio install pip lettuce
+    provisio install pip webtest
+#end
+
+#task install_nginx once
+    provisio install nginx
+    provisio install httpd-tools
+#end
+
+#task configure_nginx always    
+    htpasswd -b -c /etc/nginx/.htpasswd $admin_user $admin_password
+    provisio cat etc/nginx.conf > /etc/nginx/nginx.conf
+#end
+
+#task restart_services always
+    systemctl enable nginx
+    systemctl restart nginx
+#end
+
 ```
  
 Clearly, the syntax of annotations is
