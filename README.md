@@ -33,14 +33,16 @@ Like Chef, Puppet and other tools, the Provisiofile emphasises the declarative s
 It should all seem pretty obvious after an example. 
  
 ```
+#!/bin/bash
+
 #task harden_ssh once
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
     echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 #end
 
 #task install_dependencies once
-    provisio install zlib-devel 
-    provisio install yum python-devel      
+    provisio install nginx
+    provisio install httpd-tools    
     provisio install pip uwsgi
     provisio install pip flask    
 #end
@@ -51,12 +53,13 @@ It should all seem pretty obvious after an example.
     provisio install pip webtest
 #end
 
-#task install_nginx once
-    provisio install nginx
-    provisio install httpd-tools
+#task update_website always
+    cp www/* /var/www/
+    cp lib/* /usr/lib/python2.7/site-packages/
 #end
 
-#task configure_nginx always    
+#task configure_nginx always
+    rm -f /etc/nginx/.htpasswd    
     htpasswd -b -c /etc/nginx/.htpasswd $admin_user $admin_password
     provisio cat etc/nginx.conf > /etc/nginx/nginx.conf
 #end
