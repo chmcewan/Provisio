@@ -33,8 +33,6 @@ Like Chef, Puppet and other tools, the Provisiofile emphasises the declarative s
 It should all seem pretty obvious after an example. 
  
 ```
-#!/bin/bash
-
 #task harden_ssh once
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
     echo "PermitRootLogin no" >> /etc/ssh/sshd_config
