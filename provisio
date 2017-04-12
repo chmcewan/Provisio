@@ -332,6 +332,142 @@ EOF
       esac
     ;;
 
+
+
+  touch)
+    path=$2
+    if grep -Fxq "touch $path" $BASE/manifest  
+    then
+        :
+    else
+        echo "touch $path" >> $BASE/manifest        
+    fi
+    echo -n $path
+  ;;
+
+
+  unpack)
+    rpm=$2
+
+    # TODO: set yum/pip cache to .provisio directory in RPM
+
+    # sudo yum -y install .rpm/Unnamed-0-0.x86_64.rpm
+
+  ;;
+
+  pack)
+
+    mkdir -p .rpm
+    rm -Rf .rpm/*
+
+    yum -yq install rpm-build
+
+    env=$2
+    if [ ! -z "$env" ]; then
+        set -a
+        source $env
+        set +a
+    fi
+    printenv | grep -E '^[a-z_]+=.*$' > .rpm/pack.env
+    provisio up .rpm/pack.env
+
+    pushd .rpm
+        mkdir BUILD RPMS SOURCES SPECS SRPMS ROOT
+    popd
+
+    cat <<EOF > .rpm/SPECS/pack.spec
+%define _topdir $PWD/.rpm 
+BuildRoot:      $PWD/.rpm/ROOT
+Summary:        This package has no summary
+License:        Public domain
+Name:           Unnamed
+Version:        0
+Release:        0
+Source:         Unamed-0.tar.gz
+Prefix:         /usr
+Group:          Development/Tools
+Requires:       perl
+Requires:       epel-release
+Requires:       python-pip
+EOF
+
+    for pkg in $(grep "^yum" .provisio/manifest | cut -d' ' -f2); do
+        echo "Requires:       $pkg" >> .rpm/SPECS/pack.spec
+    done
+
+
+    cat <<EOF >> .rpm/SPECS/pack.spec
+%description
+This package has no description
+ 
+%prep
+
+
+%build
+
+ 
+%install
+mkdir -p %{buildroot}/tmp/$DIGEST/.provisio
+cp -Rf $BASE/* %{buildroot}/tmp/$DIGEST/.provisio/
+
+mkdir -p %{buildroot}/usr/bin
+cp /usr/bin/provisio %{buildroot}/usr/bin/provisio
+chmod 755 %{buildroot}/usr/bin/provisio
+
+EOF
+
+    for pkg in $(grep "^touch" .provisio/manifest | cut -d' ' -f2); do
+        if [ -d $pkg ]; then
+            echo "mkdir -p %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
+            echo "cp -Rf $pkg/* %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
+        else
+            echo "mkdir -p \$(dirname %{buildroot}$pkg)" >> .rpm/SPECS/pack.spec
+            echo "cp $pkg %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
+        fi        
+    done
+
+
+    cat <<EOF >> .rpm/SPECS/pack.spec
+%files
+%defattr(-,root,root)
+/usr/bin/provisio
+/tmp/$DIGEST/.provisio
+EOF
+
+    for pkg in $(grep "^touch" .provisio/manifest | cut -d' ' -f2); do
+        echo "$pkg" >> .rpm/SPECS/pack.spec
+    done
+
+
+    cat <<EOF >> .rpm/SPECS/pack.spec
+%pre
+EOF
+
+    for pkg in $(grep "^pip" .provisio/manifest | cut -d' ' -f2); do
+        echo "pip install $pkg" >> .rpm/SPECS/pack.spec
+    done
+
+    cat <<EOF >> .rpm/SPECS/pack.spec
+%post
+rm -Rf /tmp/$DIGEST/.provisio
+
+%preun
+echo "WARNING: uninstalling is not currently supported"
+
+%postun
+echo "WARNING: uninstalling is not currently supported"
+
+EOF
+
+rpmbuild -v -bb --clean .rpm/SPECS/pack.spec
+cp .rpm/RPMS/x86_64/*.rpm .rpm/
+
+#### rpm -i --force .rpm/hyperbroker-0.1/RPMS/x86_64/hyperbroker-0.1-1.x86_64.rpm
+
+
+  ;;
+
+
   download)
 
     if command -v wget >/dev/null 2>&1
