@@ -98,6 +98,21 @@ EOF
     yum)
         mkdir -p $BASE/yum
 
+        if [ -e /var/run/yum.pid ]; then
+            # cannot run yum recursively...can we run yum list recursively?
+            # if yum list installed $app; then
+            #     # probably okay since already installed
+            #     echo "WARNING: Cannot run yum recursively but $app is already installed"
+            #     :
+            # else
+            #     echo "ERROR: Cannot run yum recursively and $app not already installed"
+            #     exit 1
+            # fi
+
+            # fail silently and hope for the best!
+            exit 0
+        fi
+
         cp /etc/yum.conf /etc/yum.conf.bak
         sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
         sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
@@ -347,47 +362,51 @@ EOF
 
 
   unpack)
-    rpm=$2
 
-    # TODO: set yum/pip cache to .provisio directory in RPM
-
-    # sudo yum -y install .rpm/Unnamed-0-0.x86_64.rpm
+    cp /etc/yum.conf /etc/yum.conf.bak
+    sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
+    sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
+    yum -y -C install $2  
+    cp -f /etc/yum.conf.bak /etc/yum.conf
 
   ;;
 
   pack)
+    env=$2
 
     mkdir -p .rpm
     rm -Rf .rpm/*
-
-    yum -yq install rpm-build
-
-    env=$2
-    if [ ! -z "$env" ]; then
-        set -a
-        source $env
-        set +a
-    fi
-    printenv | grep -E '^[a-z_]+=.*$' > .rpm/pack.env
-    provisio up .rpm/pack.env
 
     pushd .rpm
         mkdir BUILD RPMS SOURCES SPECS SRPMS ROOT
     popd
 
+    NAME="Unnamed"
+    SUMMARY="This package has no summary"
+    DESCRIPTION="This package has no description"
+    LICENSE="Public domain"
+    VERSION=0
+    RELEASE=0
+    INCLUDE=""
+    if [ -e Packfile ]; then
+        source Packfile
+    fi
+
+
     cat <<EOF > .rpm/SPECS/pack.spec
-%define _topdir $PWD/.rpm 
-BuildRoot:      $PWD/.rpm/ROOT
-Summary:        This package has no summary
-License:        Public domain
-Name:           Unnamed
-Version:        0
-Release:        0
-Source:         Unamed-0.tar.gz
+%define _topdir .rpm 
+%define _unpackaged_files_terminate_build 0
+
+BuildRoot:      .rpm/ROOT
+Summary:        $SUMMARY
+License:        $LICENSE
+Name:           $NAME
+Version:        $VERSION
+Release:        $RELEASE
+Source:         $NAME-$VERSION.tar.gz
 Prefix:         /usr
 Group:          Development/Tools
 Requires:       perl
-Requires:       epel-release
 Requires:       python-pip
 EOF
 
@@ -395,11 +414,10 @@ EOF
         echo "Requires:       $pkg" >> .rpm/SPECS/pack.spec
     done
 
-
     cat <<EOF >> .rpm/SPECS/pack.spec
 %description
-This package has no description
- 
+$DESCRIPTION
+
 %prep
 
 
@@ -409,47 +427,44 @@ This package has no description
 %install
 mkdir -p %{buildroot}/tmp/$DIGEST/.provisio
 cp -Rf $BASE/* %{buildroot}/tmp/$DIGEST/.provisio/
+cp -f $BASE/../Provisiofile %{buildroot}/tmp/$DIGEST/
+
+if [ -e "$BASE/../$env" ]; then
+    set -a    
+    source "$BASE/../$env"
+    set +a
+fi
+printenv | grep -E '^[a-z_][a-z_]+=.*$' > %{buildroot}/tmp/$DIGEST/environment.env
 
 mkdir -p %{buildroot}/usr/bin
 cp /usr/bin/provisio %{buildroot}/usr/bin/provisio
 chmod 755 %{buildroot}/usr/bin/provisio
 
-EOF
+for i in $INCLUDE; do
+    echo "Including \$i..."
+    if [ -d $BASE/../\$i ]; then
+        cp -Rf $BASE/../\$i %{buildroot}/tmp/$DIGEST/
+    else
+        cp -f $BASE/../\$i %{buildroot}/tmp/$DIGEST/
+    fi
+done
 
-    for pkg in $(grep "^touch" .provisio/manifest | cut -d' ' -f2); do
-        if [ -d $pkg ]; then
-            echo "mkdir -p %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
-            echo "cp -Rf $pkg/* %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
-        else
-            echo "mkdir -p \$(dirname %{buildroot}$pkg)" >> .rpm/SPECS/pack.spec
-            echo "cp $pkg %{buildroot}$pkg" >> .rpm/SPECS/pack.spec
-        fi        
-    done
+# Build a manifest of the RPM's directory hierarchy.
+echo "%%defattr(-, root, root)" > MANIFEST
+(cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >> MANIFEST
 
+%files -f MANIFEST
 
-    cat <<EOF >> .rpm/SPECS/pack.spec
-%files
-%defattr(-,root,root)
-/usr/bin/provisio
-/tmp/$DIGEST/.provisio
-EOF
-
-    for pkg in $(grep "^touch" .provisio/manifest | cut -d' ' -f2); do
-        echo "$pkg" >> .rpm/SPECS/pack.spec
-    done
-
-
-    cat <<EOF >> .rpm/SPECS/pack.spec
 %pre
-EOF
 
-    for pkg in $(grep "^pip" .provisio/manifest | cut -d' ' -f2); do
-        echo "pip install $pkg" >> .rpm/SPECS/pack.spec
-    done
-
-    cat <<EOF >> .rpm/SPECS/pack.spec
 %post
-rm -Rf /tmp/$DIGEST/.provisio
+
+# rm -f /var/run/yum.pid
+# rm -f /var/lib/rpm/.rpm.lock
+pushd /tmp/$DIGEST
+    provisio up environment.env
+popd
+rm -Rf /tmp/$DIGEST
 
 %preun
 echo "WARNING: uninstalling is not currently supported"
@@ -459,14 +474,16 @@ echo "WARNING: uninstalling is not currently supported"
 
 EOF
 
+yum -yq install rpm-build
+# rpmbuild -v -bb --clean --buildroot=$PWD/.rpm/ROOT .rpm/SPECS/pack.spec
 rpmbuild -v -bb --clean .rpm/SPECS/pack.spec
-cp .rpm/RPMS/x86_64/*.rpm .rpm/
+cp .rpm/RPMS/x86_64/*.rpm .
+
 
 #### rpm -i --force .rpm/hyperbroker-0.1/RPMS/x86_64/hyperbroker-0.1-1.x86_64.rpm
 
 
   ;;
-
 
   download)
 
