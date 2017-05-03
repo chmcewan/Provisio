@@ -349,6 +349,76 @@ EOF
 
 
 
+
+  service)
+    path=$2
+    nm=$(basename $path)
+
+    if [ ! -e /etc/systemd/system/supervisord.service ]; then
+
+        # install supervisor using same provisio building blocks
+        provisio install pip supervisor
+        cat <<EOF > $(provisio touch /etc/systemd/system/supervisord.service)
+[Unit]
+Description=Supervisor daemon
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/supervisord
+ExecStop=/usr/bin/supervisorctl \$OPTIONS shutdown
+ExecReload=/usr/bin/supervisorctl \$OPTIONS reload
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+        mkdir -p $(provisio touch /etc/supervisor.d)
+        cat <<EOF > $(provisio touch /etc/supervisord.conf)
+[unix_http_server]
+file=/var/run/supervisor.sock
+
+[supervisord]
+logfile=/var/log/supervisord.log 
+logfile_maxbytes=50MB        
+logfile_backups=10           
+loglevel=info                
+pidfile=/var/run/supervisord.pid 
+nodaemon=false               
+minfds=1024                  
+minprocs=200                 
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix:///var/run/supervisor.sock 
+
+[include]
+files=/etc/supervisor.d/*.ini
+EOF
+        systemctl enable supervisord
+
+    fi
+
+    # now install the service
+    echo "[program:$nm]" > /etc/supervisor.d/$nm.ini
+    echo "command=$path" >> /etc/supervisor.d/$nm.ini
+    shift; shift;
+    while [ ! $# -eq 0 ]
+    do
+        echo "$1=$2" >> /etc/supervisor.d/$nm.ini
+        shift; shift;
+    done
+
+    # flag the services existence in the manifest
+    echo "service $nm" >> $BASE/manifest
+    systemctl restart supervisord
+
+  ;;
+
   touch)
     path=$2
     if grep -Fxq "touch $path" $BASE/manifest  
@@ -363,124 +433,85 @@ EOF
 
   unpack)
 
-    cp /etc/yum.conf /etc/yum.conf.bak
-    sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
-    sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
-    yum -y -C install $2  
-    cp -f /etc/yum.conf.bak /etc/yum.conf
+    for f in $(grep "^yum" $BASE/manifest | cut -d' ' -f2); do
+        provisio install yum $f
+    done
+
+    for f in $(grep "^pip" $BASE/manifest | cut -d' ' -f2); do
+        provisio install pip $f
+    done
+
+    for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
+        if [ -d $BASE/touched$f ]; then
+            mkdir -p $f
+            cp -fR $BASE/touched$f/* $f/
+        else
+            mkdir -p $(dirname $f)
+            cp $BASE/touched$f $f
+        fi
+    done
+
+    if grep -Fxq "service" $BASE/manifest  
+    then
+        :
+    else
+        # everything should already be installed, just need to tell systemd
+        systemctl enable supervisord
+        systemctl restart supervisord        
+    fi
 
   ;;
 
   pack)
-    env=$2
 
-    mkdir -p .rpm
-    rm -Rf .rpm/*
+    # if [ ! -z "$2" ]; then
+    #     # import environmental variables
+    #     set -a
+    #     source $2
+    #     set +a
+    # fi
+   
+    # preserve the version of provisio with us
+    cp $0 $BASE/provisio
 
-    pushd .rpm
-        mkdir BUILD RPMS SOURCES SPECS SRPMS ROOT
-    popd
+    # preserve just the sanitised environment?
+    # provisio env > $BASE/environment.env
+    # printenv | grep -E '^[a-z_][a-z_]+=.*$' > $BASE/environment.env
 
-    NAME="Unnamed"
-    SUMMARY="This package has no summary"
-    DESCRIPTION="This package has no description"
-    LICENSE="Public domain"
-    VERSION=0
-    RELEASE=0
-    INCLUDE=""
-    if [ -e Packfile ]; then
-        source Packfile
-    fi
-
-
-    cat <<EOF > .rpm/SPECS/pack.spec
-%define _topdir .rpm 
-%define _unpackaged_files_terminate_build 0
-
-BuildRoot:      .rpm/ROOT
-Summary:        $SUMMARY
-License:        $LICENSE
-Name:           $NAME
-Version:        $VERSION
-Release:        $RELEASE
-Source:         $NAME-$VERSION.tar.gz
-Prefix:         /usr
-Group:          Development/Tools
-Requires:       perl
-Requires:       python-pip
-EOF
-
-    for pkg in $(grep "^yum" .provisio/manifest | cut -d' ' -f2); do
-        echo "Requires:       $pkg" >> .rpm/SPECS/pack.spec
+    mkdir -p $BASE/touched
+    for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
+        if [ -d $f ]; then
+            mkdir -p $BASE/touched/$f
+            cp -fR $f/* $BASE/touched$f/
+        else
+            mkdir -p $(dirname $BASE/touched$f)
+            cp $f $BASE/touched$f
+        fi
     done
 
-    cat <<EOF >> .rpm/SPECS/pack.spec
-%description
-$DESCRIPTION
+    cat <<EOF
+#!/bin/sh
 
-%prep
+set -e
 
-
-%build
-
- 
-%install
-mkdir -p %{buildroot}/tmp/$DIGEST/.provisio
-cp -Rf $BASE/* %{buildroot}/tmp/$DIGEST/.provisio/
-cp -f $BASE/../Provisiofile %{buildroot}/tmp/$DIGEST/
-
-if [ -e "$BASE/../$env" ]; then
-    set -a    
-    source "$BASE/../$env"
-    set +a
+if ! [ \$(id -u) = 0 ]; then
+   echo "ERROR: must run under root or sudo"
+   exit 1
 fi
-printenv | grep -E '^[a-z_][a-z_]+=.*$' > %{buildroot}/tmp/$DIGEST/environment.env
 
-mkdir -p %{buildroot}/usr/bin
-cp /usr/bin/provisio %{buildroot}/usr/bin/provisio
-chmod 755 %{buildroot}/usr/bin/provisio
-
-for i in $INCLUDE; do
-    echo "Including \$i..."
-    if [ -d $BASE/../\$i ]; then
-        cp -Rf $BASE/../\$i %{buildroot}/tmp/$DIGEST/
-    else
-        cp -f $BASE/../\$i %{buildroot}/tmp/$DIGEST/
-    fi
-done
-
-# Build a manifest of the RPM's directory hierarchy.
-echo "%%defattr(-, root, root)" > MANIFEST
-(cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >> MANIFEST
-
-%files -f MANIFEST
-
-%pre
-
-%post
-
-# rm -f /var/run/yum.pid
-# rm -f /var/lib/rpm/.rpm.lock
+mkdir -p /tmp/$DIGEST
+sed '0,/^##EOF##$/d' \$0 > /tmp/$DIGEST/pv.tgz 
 pushd /tmp/$DIGEST
-    provisio up environment.env
+    tar xzf pv.tgz 
+    cp .provisio/provisio /usr/bin/provisio
+    chmod 755 /usr/bin/provisio
+    provisio unpack # .provisio/environment.env
 popd
-rm -Rf /tmp/$DIGEST
+exit 0
 
-%preun
-echo "WARNING: uninstalling is not currently supported"
-
-%postun
-echo "WARNING: uninstalling is not currently supported"
-
+##EOF##
 EOF
-
-yum -yq install rpm-build
-# rpmbuild -v -bb --clean --buildroot=$PWD/.rpm/ROOT .rpm/SPECS/pack.spec
-rpmbuild -v -bb --clean .rpm/SPECS/pack.spec
-cp .rpm/RPMS/x86_64/*.rpm .
-
-
-#### rpm -i --force .rpm/hyperbroker-0.1/RPMS/x86_64/hyperbroker-0.1-1.x86_64.rpm
+    tar cz .provisio
 
 
   ;;
