@@ -433,31 +433,45 @@ EOF
 
   unpack)
 
-    for f in $(grep "^yum" $BASE/manifest | cut -d' ' -f2); do
-        provisio install yum $f
-    done
+    if [ -z "$2" ]; then
+        # running against extracted .provisio directory
 
-    for f in $(grep "^pip" $BASE/manifest | cut -d' ' -f2); do
-        provisio install pip $f
-    done
-
-    for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
-        if [ -d $BASE/touched$f ]; then
-            mkdir -p $f
-            cp -fR $BASE/touched$f/* $f/
-        else
-            mkdir -p $(dirname $f)
-            cp $BASE/touched$f $f
+        if [ ! -e $BASE/provisio ]; then
+            echo "ERROR: this .provisio directory has not been packed!"
+            exit 1
         fi
-    done
 
-    if grep -Fxq "service" $BASE/manifest  
-    then
-        :
+        for f in $(grep "^yum" $BASE/manifest | cut -d' ' -f2); do
+            provisio install yum $f
+        done
+
+        for f in $(grep "^pip" $BASE/manifest | cut -d' ' -f2); do
+            provisio install pip $f
+        done
+
+        for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
+            if [ -d $BASE/touched$f ]; then
+                mkdir -p $f
+                cp -fR $BASE/touched$f/* $f/
+            else
+                mkdir -p $(dirname $f)
+                cp $BASE/touched$f $f
+            fi
+        done
+
+        if grep -Fxq "service" $BASE/manifest ; then
+            :
+        else
+            # everything should already be installed, just need to tell systemd
+            systemctl enable supervisord
+            systemctl restart supervisord        
+        fi
+
+    
+
     else
-        # everything should already be installed, just need to tell systemd
-        systemctl enable supervisord
-        systemctl restart supervisord        
+        # running against a packed file
+        :
     fi
 
   ;;
@@ -478,16 +492,19 @@ EOF
     # provisio env > $BASE/environment.env
     # printenv | grep -E '^[a-z_][a-z_]+=.*$' > $BASE/environment.env
 
-    mkdir -p $BASE/touched
-    for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
-        if [ -d $f ]; then
-            mkdir -p $BASE/touched/$f
-            cp -fR $f/* $BASE/touched$f/
-        else
-            mkdir -p $(dirname $BASE/touched$f)
-            cp $f $BASE/touched$f
-        fi
-    done
+    # FIXME: we probably want to always overwrite...
+    if [ ! -d $BASE/touched ]; then
+        mkdir -p $BASE/touched
+        for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
+            if [ -d $f ]; then
+                mkdir -p $BASE/touched/$f
+                cp -fR $f/* $BASE/touched$f/
+            else
+                mkdir -p $(dirname $BASE/touched$f)
+                cp $f $BASE/touched$f
+            fi
+        done
+    fi
 
     cat <<EOF
 #!/bin/sh
@@ -503,10 +520,13 @@ mkdir -p /tmp/$DIGEST
 sed '0,/^##EOF##$/d' \$0 > /tmp/$DIGEST/pv.tgz 
 pushd /tmp/$DIGEST
     tar xzf pv.tgz 
-    cp .provisio/provisio /usr/bin/provisio
-    chmod 755 /usr/bin/provisio
-    provisio unpack # .provisio/environment.env
+    if [ ! -e /usr/bin/provisio ]; then
+        cp .provisio/provisio /usr/bin/provisio
+        chmod 755 /usr/bin/provisio
+    fi
+    provisio unpack
 popd
+rm -Rf /tmp/$DIGEST
 exit 0
 
 ##EOF##
