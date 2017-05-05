@@ -654,8 +654,9 @@ EOF
 
   up)
 
-    # FIXME
-    if command -v perl >/dev/null 2>&1
+    # FIXME: apart from being an annoying dependency
+    # this can break due to build/deploy parity mismatch
+    if command -v perl >/dev/null 2>&1; then
         :
     else
         provisio install yum perl
