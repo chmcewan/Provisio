@@ -492,19 +492,16 @@ EOF
     # provisio env > $BASE/environment.env
     # printenv | grep -E '^[a-z_][a-z_]+=.*$' > $BASE/environment.env
 
-    # FIXME: we probably want to always overwrite...
-    if [ ! -d $BASE/touched ]; then
-        mkdir -p $BASE/touched
-        for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
-            if [ -d $f ]; then
-                mkdir -p $BASE/touched/$f
-                cp -fR $f/* $BASE/touched$f/
-            else
-                mkdir -p $(dirname $BASE/touched$f)
-                cp $f $BASE/touched$f
-            fi
-        done
-    fi
+    mkdir -p $BASE/touched
+    for f in $(grep "^touch" $BASE/manifest | cut -d' ' -f2); do
+        if [ -d $f ]; then
+            mkdir -p $BASE/touched/$f
+            cp -fR $f/* $BASE/touched$f/
+        else
+            mkdir -p $(dirname $BASE/touched$f)
+            cp $f $BASE/touched$f
+        fi
+    done
 
     cat <<EOF
 #!/bin/sh
@@ -657,6 +654,13 @@ EOF
 
   up)
 
+    # FIXME
+    if command -v perl >/dev/null 2>&1
+        :
+    else
+        provisio install yum perl
+    fi
+
     if [ ! -f ./$PROVISIOFILE ]; then
         echo "ERROR: No '$PROVISIOFILE' found in current directory!"
         exit 1
@@ -668,17 +672,13 @@ EOF
         source $2
         set +a
     fi
-
     
     cp ./$PROVISIOFILE $SCRATCH/$PROVISIOFILE.sh
-
-
     export SCRATCHDIR=$SCRATCH
 
     # complex tasks
     perl -0777 -pi -e 's|#task\h+(\S+)\h+(\S+)\h+if\h+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
     perl -0777 -pi -e 's|#task\h+(\S+)\h+(\S+)\h+unless\h+(\S+)(.*?)#end|if [ -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
-
 
     # primitive tasks
     perl -0777 -pi -e 's|#task\h+(\S+)\h+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
