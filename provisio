@@ -155,9 +155,10 @@ EOF
         then
             :
         else
-            provisio download https://bootstrap.pypa.io/get-pip.py
-            python /tmp/get-pip.py
-            rm /tmp/get-pip.py
+            #provisio download https://bootstrap.pypa.io/get-pip.py
+            #python /tmp/get-pip.py
+            #rm /tmp/get-pip.py
+            provisio install yum python-pip
         fi
 
         if [ ! -d ~/.provisio-pip ]; then
