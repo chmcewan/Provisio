@@ -155,28 +155,17 @@ EOF
         then
             :
         else
-            #provisio download https://bootstrap.pypa.io/get-pip.py
-            #python /tmp/get-pip.py
-            #rm /tmp/get-pip.py
-            provisio install yum epel-release
-            provisio install yum python-pip
+            provisio download https://bootstrap.pypa.io/get-pip.py
+            python /tmp/get-pip.py
+            rm /tmp/get-pip.py
         fi
-
-        if [ ! -d ~/.provisio-pip ]; then
-            mkdir ~/.provisio-pip
-        fi
-
-        # pip --cache-dir $BASE/pip install $2
 
         if grep -Fxq $tag $BASE/manifest  
         then
-            # dont attempt to sync in case read-only
-            cp -fR $BASE/pip/* ~/.provisio-pip/ | true
-            pip --cache-dir ~/.provisio-pip install $app
+            pip install --no-index --find-links=$BASE/pip $3
         else
-            cp -fR $BASE/pip/* ~/.provisio-pip/ | true
-            pip --cache-dir ~/.provisio-pip install $app
-            cp -fR ~/.provisio-pip/* $BASE/pip/
+            pip install --download $BASE/pip $3
+            pip install --no-index --find-links=$BASE/pip $3
             echo $tag >> $BASE/manifest
         fi
         
