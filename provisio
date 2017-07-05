@@ -117,7 +117,7 @@ EOF
         sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
         sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
 
-        if grep -Fxq $tag $BASE/manifest  
+        if grep -Fxq "$tag" $BASE/manifest  
         then
             yum -y -C install $app
         else
@@ -136,7 +136,7 @@ EOF
         sed -i "s/keepcache=0/keepcache=1/" /etc/yum.conf
         sed -i "s@cachedir=.*@cachedir=$BASE/yum/repo@" /etc/yum.conf
 
-        if grep -Fxq $tag $BASE/manifest  
+        if grep -Fxq "$tag" $BASE/manifest  
         then
             yum -y -C groupinstall "$app"
         else
@@ -162,7 +162,7 @@ EOF
             provisio install yum python-pip
         fi
 
-        if grep -Fxq $tag $BASE/manifest  
+        if grep -Fxq "$tag" $BASE/manifest  
         then
             pip install --no-index --find-links=$BASE/pip $3
         else
@@ -196,7 +196,7 @@ EOF
                 fi
             done
         else
-            if grep -Fxq $tag $BASE/manifest  
+            if grep -Fxq "$tag" $BASE/manifest  
             then
                 # dont attempt to sync in case read-only
                 cp -fR $BASE/npm/* ~/.npm/ | true
@@ -221,7 +221,7 @@ EOF
             provisio install yum npm
         fi
 
-        if grep -Fxq $tag $BASE/manifest  
+        if grep -Fxq "$tag" $BASE/manifest  
         then
             # dont attempt to sync in case read-only
             cp -fR $BASE/npm/* ~/.npm/ | true
