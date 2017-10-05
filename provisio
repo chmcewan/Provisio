@@ -373,14 +373,14 @@ EOF
         mkdir -p $(provisio touch /etc/supervisor.d)
         cat <<EOF > $(provisio touch /etc/supervisord.conf)
 [unix_http_server]
-file=/var/run/supervisor.sock
+file=/dev/shm/supervisor.sock
 
 [supervisord]
 logfile=/var/log/supervisord.log 
 logfile_maxbytes=50MB        
 logfile_backups=10           
 loglevel=info                
-pidfile=/var/run/supervisord.pid 
+pidfile=/dev/shm/supervisord.pid 
 nodaemon=false               
 minfds=1024                  
 minprocs=200                 
@@ -389,19 +389,27 @@ minprocs=200
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
-serverurl=unix:///var/run/supervisor.sock 
+serverurl=unix:///dev/shm/supervisor.sock 
 
 [include]
 files=/etc/supervisor.d/*.ini
 EOF
         systemctl enable supervisord
-
+        systemctl start supervisord
     fi
 
     # now install the service
     echo "[program:$nm]" > /etc/supervisor.d/$nm.ini
     echo "command=$path" >> /etc/supervisor.d/$nm.ini
     shift; shift;
+    cat <<EOF >> /etc/supervisor.d/$nm.ini
+autostart=true    
+autorestart=true
+killasgroup=true
+stopasgroup=true
+stdout_logfile=/var/log/$nm.log
+stderr_logfile=/var/log/$nm.log    
+EOF
     while [ ! $# -eq 0 ]
     do
         echo "$1=$2" >> /etc/supervisor.d/$nm.ini
@@ -410,8 +418,7 @@ EOF
 
     # flag the services existence in the manifest
     echo "service $nm" >> $BASE/manifest
-    systemctl restart supervisord
-
+    supervisorctl update
   ;;
 
   touch)
