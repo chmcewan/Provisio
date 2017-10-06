@@ -264,8 +264,10 @@ EOF
             :
         else
             provisio install docker
-            systemctl start docker
-            systemctl enable docker
+            if [ -z "$DOCKER" ]; then
+                systemctl start docker
+                systemctl enable docker
+            fi
         fi
 
         image=${app/":"/"-DOCKERCOLON-"}
@@ -394,8 +396,11 @@ serverurl=unix:///dev/shm/supervisor.sock
 [include]
 files=/etc/supervisor.d/*.ini
 EOF
-        systemctl enable supervisord
-        systemctl start supervisord
+
+        if [ -z "$DOCKER" ]; then
+            systemctl enable supervisord
+            systemctl start supervisord
+        fi
     fi
 
     # now install the service
@@ -465,8 +470,10 @@ EOF
             :
         else
             # everything should already be installed, just need to tell systemd
-            systemctl enable supervisord
-            systemctl restart supervisord        
+            if [ -z "$DOCKER" ]; then
+                systemctl enable supervisord
+                systemctl restart supervisord
+            fi
         fi
 
     
