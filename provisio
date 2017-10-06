@@ -350,7 +350,7 @@ EOF
   service)
     path=$2
     nm=$(basename $path)
-    sdir="/dev/shm"
+    sdir="/var/run"
 
     if [ ! -e /etc/systemd/system/supervisord.service ]; then
 
