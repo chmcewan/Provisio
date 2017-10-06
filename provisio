@@ -350,6 +350,7 @@ EOF
   service)
     path=$2
     nm=$(basename $path)
+    sdir="/dev/shm"
 
     if [ ! -e /etc/systemd/system/supervisord.service ]; then
 
@@ -375,14 +376,14 @@ EOF
         mkdir -p $(provisio touch /etc/supervisor.d)
         cat <<EOF > $(provisio touch /etc/supervisord.conf)
 [unix_http_server]
-file=/var/local/supervisor.sock
+file=$sdir/supervisor.sock
 
 [supervisord]
 logfile=/var/log/supervisord.log 
 logfile_maxbytes=50MB        
 logfile_backups=10           
 loglevel=info                
-pidfile=/var/local/supervisord.pid 
+pidfile=$sdir/supervisord.pid 
 nodaemon=false               
 minfds=1024                  
 minprocs=200                 
@@ -391,7 +392,7 @@ minprocs=200
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
-serverurl=unix:///var/local/supervisor.sock 
+serverurl=unix://$sdir/supervisor.sock 
 
 [include]
 files=/etc/supervisor.d/*.ini
