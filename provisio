@@ -424,7 +424,9 @@ EOF
 
     # flag the services existence in the manifest
     echo "service $nm" >> $BASE/manifest
-    supervisorctl update
+    if [ -z "$DOCKER" ]; then
+        supervisorctl update
+    fi
   ;;
 
   touch)
