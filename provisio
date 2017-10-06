@@ -375,14 +375,14 @@ EOF
         mkdir -p $(provisio touch /etc/supervisor.d)
         cat <<EOF > $(provisio touch /etc/supervisord.conf)
 [unix_http_server]
-file=/dev/shm/supervisor.sock
+file=/var/local/supervisor.sock
 
 [supervisord]
 logfile=/var/log/supervisord.log 
 logfile_maxbytes=50MB        
 logfile_backups=10           
 loglevel=info                
-pidfile=/dev/shm/supervisord.pid 
+pidfile=/var/local/supervisord.pid 
 nodaemon=false               
 minfds=1024                  
 minprocs=200                 
@@ -391,7 +391,7 @@ minprocs=200
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
-serverurl=unix:///dev/shm/supervisor.sock 
+serverurl=unix:///var/local/supervisor.sock 
 
 [include]
 files=/etc/supervisor.d/*.ini
