@@ -94,6 +94,16 @@ For all other cases
 
 downloads and caches a remote dependency. The (possibly cached) file will appear "downloaded" to the /tmp directory because the working directory may be read-only at provision-time.
 
+Additionally, for git repositories
+    
+    $ provisio pull [-f] [--no-up] <org-name>/<repo-name>
+
+clones or pulls a repository from `github`. By default this will clone the first time it is run and always use the cached version after that. The `-f` flag forces a pull from the internet. If the repository itself contains a `Provisiofile` at the top level, `provisio up` will run automatically on the repo. To prevent this behaviour, use the `--no-up` flag.
+
+If everything is contained in a git repository with a `Provisiofile` at the top level, running `provisio pull <org-name>/<repo-name>` is an alternative for running `provisio up`.
+
+The (possibly cached) repository will appear "cloned" to the /tmp directory.
+
 ### Configuration utilities
 
 Provisio provides some simple commands to aid local configuration and reduce line noise.

@@ -626,13 +626,30 @@ EOF
     name=$2
     env=$3
     force=
-      
+    no_up=
+
+    # If -f or --no-up flag supplied, shift other arguments along
     if [ "$name" == "-f" ]; then
         name=$3
         env=$4 
-        force=1           
+        force=1   
+    elif [ "$name" == "--no-up" ]; then
+        name=$3
+        env=$4 
+        no_up=1
     fi
     
+    # If a second -f or --no-up flag supplied, shift other arguments along
+    if [ "$name" == "-f" ]; then
+        name=$4
+        env=$5
+        force=1   
+    elif [ "$name" == "--no-up" ]; then
+        name=$4
+        env=$5
+        no_up=1
+    fi
+
     org=$(echo -n $name | sed 's@/.*@@')
     repo=$(echo -n $name | sed 's@.*/@@')
 
@@ -657,10 +674,13 @@ EOF
             git pull https://github.com/$org/$repo
         fi
         if [ -e ./Provisiofile ]; then
-            provisio up $env
+            if [ -z "$no_up" ]; then
+                provisio up $env
+            fi
         fi
     popd
 
+    cp -r $BASE/git/$repo /tmp/$repo
 
     ;;
 
@@ -710,7 +730,7 @@ EOF
     echo "       provisio download <URL>"    
     echo "       provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>"
     echo "       provisio install jdk [version]"  
-    echo "       provisio pull <org>/<repo> [environment]"       
+    echo "       provisio pull [-f] [--no-up] <org>/<repo> [environment]"       
     echo ""
     echo "       provisio set <key> <value> <file>"
     echo "       provisio get <key> <file>"    
