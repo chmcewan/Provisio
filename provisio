@@ -742,21 +742,27 @@ EOF
     # Note the "$1"s in these expressions will be substitued for the task name during the perl regex
     # Putting parts of the expression in single quotes and part in double quotes concatenates them, the
     # parts in double quotes get substituted but the single quotes are absolute strings
+    
+    LOG_FILE="$SCRATCH"'/$1.log'
+
     if [ ! -z "$verbose" ]; then
         START_COMMAND='printf "\n\e[94mStarted task $1\e[39m\n"'
-        STDOUT_REDIRECT=' >(tee '"$SCRATCH"'/$1.log)'
+        STDOUT_REDIRECT=' >(tee '"$LOG_FILE"')'
         END_COMMAND='sleep 0.5'
     else
         START_COMMAND='printf "\r%-50s[\e[94mrunning\e[39m]" "$1"'
-        STDOUT_REDIRECT="$SCRATCH"'/$1.log'
+        STDOUT_REDIRECT="$LOG_FILE"
         END_COMMAND=''
     fi
 
     MAIN_COMMAND="$START_COMMAND"'\n'
     MAIN_COMMAND+='exec 3>&1 4>&2 1>'"$STDOUT_REDIRECT"' 2>&1\n'
     MAIN_COMMAND+='set -e\n'
-    MAIN_COMMAND+='trap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail '"$SCRATCH"'/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n'
+    MAIN_COMMAND+='trap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail '"$LOG_FILE"' ; echo \"\e[39m\"; exit 1; }" EXIT\n'
+    MAIN_COMMAND+='CACHE_SIZE_1=\$(du -sb '"$BASE"' \| awk '"'"'{print \$1}'"'"')\n'
     MAIN_COMMAND+='$2\n'
+    MAIN_COMMAND+='CACHE_SIZE_2=\$(du -sb '"$BASE"' \| awk '"'"'{print \$1}'"'"')\n'
+    MAIN_COMMAND+='echo Cache size before task was "\$CACHE_SIZE_1"B, new size is "\$CACHE_SIZE_2"B, diff \$((\$CACHE_SIZE_2-\$CACHE_SIZE_1))B\n'
     MAIN_COMMAND+="$END_COMMAND"'\n'
     MAIN_COMMAND+='trap - EXIT\n'
     MAIN_COMMAND+='touch '"$SCRATCH"'/$1.success\n'
@@ -766,7 +772,7 @@ EOF
     
     perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f '"$SCRATCH"'/$1.success ]; then\n'"$MAIN_COMMAND"'\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
     perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|'"$MAIN_COMMAND"'|sg' $SCRATCH/$PROVISIOFILE.sh
-
+    
     VERBOSE="$verbose" bash $SCRATCH/$PROVISIOFILE.sh
     
     ;;
