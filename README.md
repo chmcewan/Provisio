@@ -133,7 +133,7 @@ supports decomposing Provisiofiles so that common configurations (e.g. base Linu
 
 Provisio redirects command output to a log file. To view the logs
 
-    $ provisio log [task_name]
+    $ provisio logs [task_name]
 
 To make provisio additionally print all output to the screen, use _verbose mode_
 
