@@ -34,7 +34,11 @@ case "$1" in
   include)
     cwd=$(pwd)
     cd $2
-    provisio up
+    if [ ! -z "$VERBOSE" ]; then
+        provisio up -v
+    else
+        provisio up
+    fi
     ec=$?
     cd $cwd
     exit $ec
@@ -583,12 +587,22 @@ EOF
     perl -pe 's/\{\{(.*?)\}\}/$ENV{$1}/g' $2
     ;;
 
+  watch)
+    num_lines="$2"
+    if [ -z "$num_lines" ]; then
+        num_lines=20
+    fi
+    watch -n 1 "provisio logs | tail -n $num_lines"
+  ;;
 
   logs)
 
-    if [ ! -z "$2" ]; then
-        if [ -f $SCRATCH/$2.log ]; then
-            cat $SCRATCH/$2.log
+    task="$2"
+
+
+    if [ ! -z "$task" ]; then
+        if [ -f $SCRATCH/$task.log ]; then
+            cat $SCRATCH/$task.log
         fi
     else
         for i in $(ls -tr $SCRATCH/*.log) 
@@ -686,6 +700,15 @@ EOF
 
   up)
 
+    env=$2
+    verbose=
+
+    if [ "$env" == "-v" ]; then
+        env=$3
+        verbose=1
+    fi
+
+
     # FIXME: apart from being an annoying dependency
     # this can break due to build/deploy parity mismatch
     if command -v perl >/dev/null 2>&1; then
@@ -699,15 +722,14 @@ EOF
         exit 1
     fi
 
-    if [ ! -z "$2" ]; then
+    if [ ! -z "$env" ]; then
         # import environmental variables
         set -a
-        source $2
+        source $env
         set +a
     fi
     
     cp ./$PROVISIOFILE $SCRATCH/$PROVISIOFILE.sh
-    export SCRATCHDIR=$SCRATCH
 
     # complex tasks
     perl -0777 -pi -e 's|#task\h+(\S+)\h+(\S+)\h+if\h+(\S+)(.*?)#end|if [ ! -z "\$$3" ]; then\n#task $1 $2\n$4\n#end\nelse\nprintf "%-50s[\e[31mignored\e[39m]\n" "$1"\nfi\n|sg' $SCRATCH/$PROVISIOFILE.sh 
@@ -715,17 +737,43 @@ EOF
 
     # primitive tasks
     perl -0777 -pi -e 's|#task\h+(\S+)\h+never(.*?)#end|printf "%-50s[\e[31mignored\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh 
-    perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f $ENV{SCRATCHDIR}/$1.success ]; then\nexec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
-    perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|exec 3>&1 4>&2 1>$ENV{SCRATCHDIR}/$1.log 2>&1\nset -e\ntrap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail $ENV{SCRATCHDIR}/$1.log ; echo \"\e[39m\";  exit 1; }" EXIT\n$2\ntrap - EXIT\ntouch $ENV{SCRATCHDIR}/$1.success\nexec 1>&3 2>&4\nset +e\nprintf "%-50s[\e[32msuccess\e[39m]\n" "$1"|sg' $SCRATCH/$PROVISIOFILE.sh    
+    
+    # Either include extra logging or don't
+    # Note the "$1"s in these expressions will be substitued for the task name during the perl regex
+    # Putting parts of the expression in single quotes and part in double quotes concatenates them, the
+    # parts in double quotes get substituted but the single quotes are absolute strings
+    if [ ! -z "$verbose" ]; then
+        START_COMMAND='printf "\n\e[94mStarted task $1\e[39m\n"'
+        STDOUT_REDIRECT=' >(tee '"$SCRATCH"'/$1.log)'
+        END_COMMAND='sleep 0.5'
+    else
+        START_COMMAND='printf "\r%-50s[\e[94mrunning\e[39m]" "$1"'
+        STDOUT_REDIRECT="$SCRATCH"'/$1.log'
+        END_COMMAND=''
+    fi
 
+    MAIN_COMMAND="$START_COMMAND"'\n'
+    MAIN_COMMAND+='exec 3>&1 4>&2 1>'"$STDOUT_REDIRECT"' 2>&1\n'
+    MAIN_COMMAND+='set -e\n'
+    MAIN_COMMAND+='trap "{ exec 1>&3 2>&4; echo \"\e[31m\"; tail '"$SCRATCH"'/$1.log ; echo \"\e[39m\"; exit 1; }" EXIT\n'
+    MAIN_COMMAND+='$2\n'
+    MAIN_COMMAND+="$END_COMMAND"'\n'
+    MAIN_COMMAND+='trap - EXIT\n'
+    MAIN_COMMAND+='touch '"$SCRATCH"'/$1.success\n'
+    MAIN_COMMAND+='exec 1>&3 2>&4\n'
+    MAIN_COMMAND+='set +e\n'
+    MAIN_COMMAND+='printf "\r%-50s[\e[32msuccess\e[39m]\n" "$1"\n'
+    
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f '"$SCRATCH"'/$1.success ]; then\n'"$MAIN_COMMAND"'\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
+    perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|'"$MAIN_COMMAND"'|sg' $SCRATCH/$PROVISIOFILE.sh
 
-    SCRATCHDIR=$SCRATCH bash $SCRATCH/$PROVISIOFILE.sh
+    VERBOSE="$verbose" bash $SCRATCH/$PROVISIOFILE.sh
     
     ;;
 
   *)
     echo ""
-    echo "Usage: provisio up [environment]"
+    echo "Usage: provisio up [-v] [environment]"
     echo ""
     echo "       provisio download <URL>"    
     echo "       provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>"
@@ -738,6 +786,7 @@ EOF
     echo "       provisio env [filter]"        
     echo ""
     echo "       provisio logs [task]"
+    echo "       provisio watch [lines_to_display]"
     echo "       provisio clean [ all | cache ]"  
     echo "       provisio update"        
     echo ""

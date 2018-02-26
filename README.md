@@ -129,7 +129,18 @@ Lastly,
     
 supports decomposing Provisiofiles so that common configurations (e.g. base Linux) can be shared amongst different systems (e.g. web and database servers). Cacheing is shared across systems, whereas execution state is not.
 
+### Logging
 
+Provisio redirects command output to a log file. To view the logs
 
+    $ provisio log [task_name]
 
+To make provisio additionally print all output to the screen, use _verbose mode_
 
+    $ provisio up -v
+
+To view logs live as provisio is running (in a separate shell)
+
+    $ provisio watch [num_lines]
+
+where `num_lines` is the number of lines to `tail` from the log output.
