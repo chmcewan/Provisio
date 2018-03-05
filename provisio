@@ -37,7 +37,11 @@ case "$1" in
     if [ ! -z "$VERBOSE" ]; then
         provisio up -v
     else
-        provisio up
+        if [ ! -z "$DUPLICATE" ]; then
+            provisio up -d
+        else
+            provisio up
+        fi
     fi
     ec=$?
     cd $cwd
@@ -702,12 +706,22 @@ EOF
 
     env=$2
     verbose=
+    duplicate=
 
     if [ "$env" == "-v" ]; then
         env=$3
         verbose=1
+    elif [ "$env" == "-d" ]; then
+        env=$3
+        duplicate=1
     fi
-
+    if [ "$env" == "-v" ]; then
+        env=$4
+        verbose=1
+    elif [ "$env" == "-d" ]; then
+        env=$4
+        duplicate=1
+    fi
 
     # FIXME: apart from being an annoying dependency
     # this can break due to build/deploy parity mismatch
@@ -748,16 +762,14 @@ EOF
     if [ ! -z "$verbose" ]; then
         START_COMMAND='printf "\n\e[94mStarted task $1\e[39m\n"'
         STDOUT_REDIRECT=' >(tee '"$LOG_FILE"')'
-        BACKSPACES=''
         END_COMMAND='sleep 0.5'
     else
-        START_COMMAND='printf "%-50s[\e[94mrunning\e[39m]" "$1"'
+        NEWLINE=''
+        if [ ! -z "$duplicate" ]; then
+            NEWLINE='\n'
+        fi
+        START_COMMAND='printf "%-50s[\e[94mstarted\e[39m]'"$NEWLINE"'" "$1"'
         STDOUT_REDIRECT="$LOG_FILE"
-        BACKSPACES=''
-        for i in `seq 1 59`;  # This is the number of characters printed by the start command
-        do
-            BACKSPACES+='\b'
-        done 
         END_COMMAND=''
     fi
 
@@ -773,19 +785,25 @@ EOF
     MAIN_COMMAND+='trap - EXIT\n'
     MAIN_COMMAND+='touch '"$SCRATCH"'/$1.success\n'
     MAIN_COMMAND+='exec 1>&3 2>&4\n'
-    MAIN_COMMAND+='set +e\n'   
-    MAIN_COMMAND+='printf "'"$BACKSPACES"'%-50s[\e[32msuccess\e[39m]\n" "$1"\n'
+    MAIN_COMMAND+='set +e\n'
+    LINERETURN=''
+    if [ -z "$duplicate" ]; then #If not duplicating
+        if [ -z "$verbose" ]; then #If not verbose
+            LINERETURN='\r' # Then return to the start of the line to overwrite
+        fi
+    fi  
+    MAIN_COMMAND+='printf "'"$LINERETURN"'%-50s[\e[32msuccess\e[39m]\n" "$1"\n'
     
     perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f '"$SCRATCH"'/$1.success ]; then\n'"$MAIN_COMMAND"'\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
     perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|'"$MAIN_COMMAND"'|sg' $SCRATCH/$PROVISIOFILE.sh
     
-    VERBOSE="$verbose" bash $SCRATCH/$PROVISIOFILE.sh
+    VERBOSE="$verbose" DUPLICATE="$duplicate" bash $SCRATCH/$PROVISIOFILE.sh
     
     ;;
 
   *)
     echo ""
-    echo "Usage: provisio up [-v] [environment]"
+    echo "Usage: provisio up [-v] [-d] [environment]"
     echo ""
     echo "       provisio download <URL>"    
     echo "       provisio install [ yum | apt | rpm | pip | npm | npm-global ] <package>"

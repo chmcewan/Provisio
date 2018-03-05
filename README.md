@@ -139,6 +139,10 @@ To make provisio additionally print all output to the screen, use _verbose mode_
 
     $ provisio up -v
 
+To make provisio duplicate each item (once with a 'started' message and once with a 'success' message) instead of trying to overwrite the console output, use _duplicate mode_. This is useful if you're using a console or logging system around provisio which doesn't play well with `\r` characters:
+
+    $ provisio up -d
+
 To view logs live as provisio is running (in a separate shell)
 
     $ provisio watch [num_lines]
