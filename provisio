@@ -748,10 +748,16 @@ EOF
     if [ ! -z "$verbose" ]; then
         START_COMMAND='printf "\n\e[94mStarted task $1\e[39m\n"'
         STDOUT_REDIRECT=' >(tee '"$LOG_FILE"')'
+        BACKSPACES=''
         END_COMMAND='sleep 0.5'
     else
-        START_COMMAND='printf "\r%-50s[\e[94mrunning\e[39m]" "$1"'
+        START_COMMAND='printf "%-50s[\e[94mrunning\e[39m]" "$1"'
         STDOUT_REDIRECT="$LOG_FILE"
+        BACKSPACES=''
+        for i in `seq 1 59`;  # This is the number of characters printed by the start command
+        do
+            BACKSPACES+='\b'
+        done 
         END_COMMAND=''
     fi
 
@@ -767,8 +773,8 @@ EOF
     MAIN_COMMAND+='trap - EXIT\n'
     MAIN_COMMAND+='touch '"$SCRATCH"'/$1.success\n'
     MAIN_COMMAND+='exec 1>&3 2>&4\n'
-    MAIN_COMMAND+='set +e\n'
-    MAIN_COMMAND+='printf "\r%-50s[\e[32msuccess\e[39m]\n" "$1"\n'
+    MAIN_COMMAND+='set +e\n'   
+    MAIN_COMMAND+='printf "'"$BACKSPACES"'%-50s[\e[32msuccess\e[39m]\n" "$1"\n'
     
     perl -0777 -pi -e 's|#task\h+(\S+)\h+once(.*?)#end|if [ ! -f '"$SCRATCH"'/$1.success ]; then\n'"$MAIN_COMMAND"'\nelse\nprintf "%-50s[skipped]\n" "$1"\nfi|sg' $SCRATCH/$PROVISIOFILE.sh 
     perl -0777 -pi -e 's|#task\h+(\S+)\h+always(.*?)#end|'"$MAIN_COMMAND"'|sg' $SCRATCH/$PROVISIOFILE.sh
